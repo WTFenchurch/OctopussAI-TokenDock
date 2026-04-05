@@ -5,11 +5,14 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --dev"
+    "dev": "electron . --dev",
+    "install-shortcuts": "node install.js",
+    "postinstall": "node install.js",
+    "uninstall": "node uninstall.js"
   },
   "keywords": ["ai", "tokens", "llm", "monitoring", "electron", "openrouter", "groq", "ollama", "litellm"],
-  "author": "",
-  "license": "MIT",
+  "author": "WTFenchurchIII",
+  "license": "SEE LICENSE",
   "dependencies": {},
   "devDependencies": {
     "electron": "^33.0.0"
