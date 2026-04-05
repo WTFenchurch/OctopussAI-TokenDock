@@ -268,4 +268,4 @@ Token Dock is built on a compassion-first ethic inspired by UNESCO and OECD AI p
 
 **Original Author:** WTFenchurchIII — He always finds such Curious things! ([@WTFenchurchIII](https://github.com/WTFenchurchIII))
 
-**Built with Claude Code — The Coding Avengers**
+**Octopuss AI — A Love Company**
