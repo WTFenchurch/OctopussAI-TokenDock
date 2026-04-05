@@ -120,6 +120,13 @@ function handleAction(e) {
 - Animation transitions smoothly — old scene fades out, new scene fades in
 - **Rule: Never interrupt running work. Finish current, start new.**
 
+### filter:brightness on Buttons Kills Sibling Hit-Testing (Critical)
+- `updateDonateCountdown()` set `style.filter='brightness(X)'` on the premium toggle button
+- Even though `filter:brightness` is safer than `opacity`, inline `style.filter` on buttons in transparent Electron windows still causes cascading hit-test failures for SIBLING buttons in the same container
+- The appearance panel buttons (opacity +/-, shimmer, rain, animBg) stopped responding whenever the donate countdown was running
+- **Fix: NEVER set inline `style.filter` on buttons. Use CSS classes (`.dimmed`) that only change `color` and `border-color`**
+- **Rule: The ONLY safe visual changes for buttons in transparent Electron are: `color`, `border-color`, `background`, `transform`, `box-shadow`**
+
 ### Pre-Commit Information Leak Check (Critical)
 - Before EVERY commit, scan for references to unreleased/private projects
 - Scan commit messages, README, source code, comments for private project names

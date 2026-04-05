@@ -735,7 +735,7 @@
             <div style="font-size:0.55em;color:var(--td);text-align:center;margin-top:0.1em">Honor system &#128153;</div>
           </div>
           <div class="content" id="content"><div class="sc"><div class="sl">STATUS</div><div class="sv text-accent">Loading...</div></div></div>
-          <div id="app-controls" class="ctrl-panel" style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0.4em 0.6em;flex-shrink:0;display:none;flex-direction:column;gap:0.15em;position:relative;z-index:10;background:var(--surface)">
+          <div id="app-controls" class="ctrl-panel" style="border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0.4em 0.6em;flex-shrink:0;display:none;flex-direction:column;gap:0.15em;position:relative;z-index:1;background:var(--surface)">
             <div class="ctrl-row">
               <span class="ctrl-label">Opacity</span>
               <button class="ctrl-btn" data-action="opDown">−</button>
@@ -3049,11 +3049,11 @@
       const label = document.getElementById('premium-label');
       if (donateSecondsLeft > 0 || !donateClicked) {
         // Use filter:brightness instead of opacity — opacity breaks hit-testing in transparent Electron
-        if (btn && !premiumUnlocked) btn.style.filter = donateClicked ? 'brightness('+(0.4 + (0.6 * (1 - donateSecondsLeft / 25))).toFixed(2)+')' : 'brightness(0.4)';
+        if (btn && !premiumUnlocked) btn.classList.add('dimmed');
         if (label && !donateClicked) label.textContent = 'Click donate first';
         else if (label && !premiumUnlocked) label.textContent = 'Unlocking in ' + donateSecondsLeft + 's...';
       } else {
-        if (btn) { btn.style.filter = ''; btn.classList.remove('dimmed'); btn.style.animation = 'pulseBtn 0.6s ease 2'; }
+        if (btn) { btn.classList.remove('dimmed'); }
         if (label && !premiumUnlocked) label.textContent = 'Click to unlock premium!';
         if (donateTimer) { clearInterval(donateTimer); donateTimer = null; }
       }
