@@ -1,0 +1,32 @@
+{
+  "name": "free-inference-stack",
+  "version": "1.0.0",
+  "description": "Multi-provider free AI inference stack with task-aware routing, token budgeting, and a desktop monitoring dock",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dock": "cd packages/token-dock && npm start",
+    "dock:dev": "cd packages/token-dock && npm run dev",
+    "test-providers": "cd packages/smart-router && python test-providers.py",
+    "test-routing": "cd packages/smart-router && python test-providers.py --routing",
+    "proxy": "cd packages/smart-router && bash start-proxy.sh",
+    "setup-ollama": "cd packages/smart-router && bash setup-ollama.sh",
+    "install:dock": "cd packages/token-dock && npm install",
+    "install:router": "pip install openai python-dotenv requests litellm[proxy]",
+    "install:all": "npm run install:dock && npm run install:router",
+    "postinstall": "cd packages/token-dock && npm install"
+  },
+  "keywords": [
+    "ai", "llm", "inference", "free-tier", "token-monitoring",
+    "openrouter", "groq", "gemini", "ollama", "litellm",
+    "electron", "desktop", "dock"
+  ],
+  "author": "WTFenchurchIII",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WTFenchurchIII/free-inference-stack"
+  }
+}

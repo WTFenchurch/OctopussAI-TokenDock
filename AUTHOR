@@ -1,0 +1,47 @@
+================================================================================
+ORIGINAL AUTHOR VERIFICATION
+================================================================================
+
+Author:    WTFenchurchIII - He always finds such Curious things!
+Legal:     REDACTED_AUTHOR
+GitHub:    WTFenchurchIII
+Date:      April 4, 2026
+Project:   Free Inference Stack / Token Dock
+
+Donation Links (Immutable):
+  PayPal:  https://www.paypal.com/donate/?business=35NCEDPRRGTP6
+  Bitcoin: bc1qhgafyepzp0r4sgntv725ywwdaqcvxdgqh5ry9v
+
+================================================================================
+CRYPTOGRAPHIC PROOF OF AUTHORSHIP
+================================================================================
+
+The following hashes verify the original author's identity and donation links.
+Any modification to the author name, GitHub username, or donation addresses
+will produce different hashes, proving tampering.
+
+Input: "REDACTED_AUTHOR|WTFenchurchIII|35NCEDPRRGTP6|bc1qhgafyepzp0r4sgntv725ywwdaqcvxdgqh5ry9v|2026-04-04"
+
+SHA-256 (Current Standard):
+99a28c93b81c1a58f9b578834ce1411dab2a76ba004ef818fec2a6ad1482acc9
+
+SHA-3-512 (Quantum-Resistant):
+63183eb4a9e144a71d60da605dcc14f7aba1b71794ba87d8cbaebabbe1074b8224819f8efddac5ed353ed2a627ab3338ce720cc93fc9bae02816cecb243e9b35
+
+================================================================================
+VERIFICATION INSTRUCTIONS
+================================================================================
+
+To verify this file has not been tampered with:
+
+  node -e "
+    const crypto = require('crypto');
+    const input = 'REDACTED_AUTHOR|WTFenchurchIII|35NCEDPRRGTP6|bc1qhgafyepzp0r4sgntv725ywwdaqcvxdgqh5ry9v|2026-04-04';
+    console.log('SHA-256:', crypto.createHash('sha256').update(input).digest('hex'));
+    console.log('SHA-3-512:', crypto.createHash('sha3-512').update(input).digest('hex'));
+  "
+
+The output MUST match the hashes above. If they don't match, the AUTHOR
+file or donation links have been modified from the original.
+
+================================================================================

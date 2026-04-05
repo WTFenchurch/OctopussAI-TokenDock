@@ -1,0 +1,17 @@
+{
+  "name": "token-dock",
+  "version": "1.0.0",
+  "description": "Always-on-top desktop dock for monitoring AI token usage across free and paid tiers",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": ["ai", "tokens", "llm", "monitoring", "electron", "openrouter", "groq", "ollama", "litellm"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@free-inference-stack/smart-router",
+  "version": "1.0.0",
+  "description": "Task-aware AI model router with cost-based fallback across free tier providers",
+  "main": "smart_router.py",
+  "scripts": {
+    "test": "python test-providers.py --routing",
+    "proxy": "bash start-proxy.sh"
+  },
+  "keywords": ["ai", "router", "llm", "free-tier", "litellm", "groq", "gemini", "ollama"],
+  "author": "WTFenchurchIII",
+  "license": "MIT"
+}

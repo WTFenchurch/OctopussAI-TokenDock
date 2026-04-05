@@ -1,0 +1,22 @@
+PASS: index.html loads — Page loaded without crash
+PASS: Dashboard renders — Dashboard rendered
+PASS: Theme selector exists — Found
+PASS: Theme options count — 13 themes
+PASS: Theme switch changes CSS — Before: #3b82f6, After: #bd93f9
+PASS: Appearance panel hidden initially — display: "none"
+PASS: Shimmer overlay exists — Found
+PASS: Shimmer toggles on — shimmerOn: true
+PASS: Shimmer overlay active — active class: true
+PASS: Shimmer toggles off — shimmerOn: false
+PASS: Opacity decreases — Before: 0.92, After: 0.82
+PASS: Rain config exists for catppuccin — exists: true
+PASS: Theme rain starts — themeRainOn: true
+PASS: Rain overlay active — active class: true
+PASS: Hearts mode on donate — hearts-mode: true
+PASS: Section headers exist — 3 sections
+PASS: Data-action elements — 25 actionable elements
+PASS: Zero inline handlers — 0 inline handlers found
+PASS: Effect selector exists — Found
+PASS: Settings flip opens — settingsOpen: true
+
+20 passed, 0 failed out of 20

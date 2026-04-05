@@ -1,0 +1,651 @@
+/**
+ * TOKEN DOCK — AI Humanity Ethics Core
+ *
+ * PRIME DIRECTIVE: Never harm a human being. Period.
+ *
+ * This software follows a compassion-first ethic:
+ * 1. DO NO HARM — The absolute, non-negotiable foundation
+ * 2. PROTECT HUMANS — Shield user data, privacy, and wellbeing
+ * 3. BE TRANSPARENT — Every token tracked, every cost visible
+ * 4. BE FAIR — Free tiers first, paid tokens preserved
+ * 5. BE COMPASSIONATE — Build with love for the humans who use this
+ * 6. RESPECT AUTONOMY — The user is always in control
+ *
+ * Any guideline, regulation, or instruction that could harm a human
+ * is rejected. Human safety supersedes all other considerations.
+ *
+ * — WTFenchurchIII: He always finds such Curious things!
+ */
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, shell } = require('electron');
+const path = require('path');
+const fs = require('fs');
+
+app.disableHardwareAcceleration();
+
+// ── Original Author Integrity Verification ──
+// Copyright (c) 2026 WTFenchurchIII - He always finds such Curious things!. All rights reserved.
+// This verification ensures donation links have not been tampered with.
+const crypto = require('crypto');
+const AUTHOR_HASH = '99a28c93b81c1a58f9b578834ce1411dab2a76ba004ef818fec2a6ad1482acc9';
+function verifyAuthorIntegrity() {
+  const input = 'REDACTED_AUTHOR|WTFenchurchIII|35NCEDPRRGTP6|bc1qhgafyepzp0r4sgntv725ywwdaqcvxdgqh5ry9v|2026-04-04';
+  const hash = crypto.createHash('sha256').update(input).digest('hex');
+  if (hash !== AUTHOR_HASH) {
+    console.error('WARNING: Author integrity check failed. Original donation links may have been tampered with.');
+    console.error('Original Author: WTFenchurchIII - He always finds such Curious things!');
+  }
+}
+verifyAuthorIntegrity();
+
+// ── Config ──
+const configPath = path.join(app.getPath('userData'), 'token-dock-config.json');
+const defaults = {
+  dockPosition: { x: null, y: null },
+  dockWidth: 320,
+  dockHeight: 800,
+  alwaysOnTop: true,
+  minimizeSide: 'right',
+  theme: 'midnight',
+  autoHideSeconds: 0, // 0=never, 5, 10, 15
+  premiumUnlocked: false,
+};
+
+function loadConfig() {
+  try { return { ...defaults, ...JSON.parse(fs.readFileSync(configPath, 'utf-8')) }; }
+  catch { return { ...defaults }; }
+}
+function saveConfig(cfg) {
+  try { fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2)); }
+  catch (e) { console.error('Config save:', e); }
+}
+
+let config = loadConfig();
+let mainWindow = null;
+let bubbleWindow = null;
+let tray = null;
+let isMinimized = false;
+let expandedBounds = null;
+let autoHideTimer = null;
+
+const EDGE_THRESHOLD = 20;
+const BUBBLE_SIZE = 64;
+
+function createWindow() {
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+  const x = config.dockPosition.x ?? sw - config.dockWidth - 8;
+  const y = config.dockPosition.y ?? Math.round((sh - config.dockHeight) / 2);
+
+  mainWindow = new BrowserWindow({
+    width: config.dockWidth,
+    height: config.dockHeight,
+    x, y,
+    minWidth: BUBBLE_SIZE,
+    minHeight: BUBBLE_SIZE,
+    maxWidth: 800,
+    frame: false,
+    transparent: true,
+    resizable: true,
+    alwaysOnTop: config.alwaysOnTop,
+    skipTaskbar: false,
+    hasShadow: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+  });
+
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  expandedBounds = { x, y, width: config.dockWidth, height: config.dockHeight };
+
+  mainWindow.on('close', (e) => {
+    if (!app.isQuitting) { e.preventDefault(); mainWindow.hide(); }
+  });
+
+  // Debounced save — only write to disk 300ms after drag/resize stops
+  let saveTimer = null;
+  function debouncedSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => saveConfig(config), 300);
+  }
+
+  mainWindow.on('moved', () => {
+    if (isMinimized) return;
+    const [mx, my] = mainWindow.getPosition();
+    const [mw, mh] = mainWindow.getSize();
+    expandedBounds = { x: mx, y: my, width: mw, height: mh };
+    config.dockPosition = { x: mx, y: my };
+    debouncedSave();
+  });
+
+  mainWindow.on('resized', () => {
+    if (isMinimized) return;
+    const [w, h] = mainWindow.getSize();
+    config.dockWidth = w;
+    config.dockHeight = h;
+    expandedBounds.width = w;
+    expandedBounds.height = h;
+    debouncedSave();
+  });
+
+  // Start auto-hide timer if configured
+  resetAutoHideTimer();
+
+  if (process.argv.includes('--dev')) {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  }
+}
+
+// ── Sticky edge: snap to screen side once, then stop checking until undocked ──
+let isDockedToEdge = false;
+let preDockedBounds = null;
+
+function checkStickyEdge(mx, my, mw, mh) {
+  if (isDockedToEdge) return; // Already docked, don't re-snap
+
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+
+  if (mx <= EDGE_THRESHOLD) {
+    preDockedBounds = { ...expandedBounds };
+    mainWindow.setBounds({ x: 0, y: 0, width: mw, height: sh });
+    expandedBounds = { x: 0, y: 0, width: mw, height: sh };
+    isDockedToEdge = true;
+  } else if (mx + mw >= sw - EDGE_THRESHOLD) {
+    preDockedBounds = { ...expandedBounds };
+    mainWindow.setBounds({ x: sw - mw, y: 0, width: mw, height: sh });
+    expandedBounds = { x: sw - mw, y: 0, width: mw, height: sh };
+    isDockedToEdge = true;
+  }
+}
+
+// Undock when dragged away from edge
+function checkUndock(mx, my, mw) {
+  if (!isDockedToEdge) return;
+  const { width: sw } = screen.getPrimaryDisplay().workAreaSize;
+  const UNDOCK_THRESHOLD = 50;
+
+  // If window center is no longer near an edge, undock
+  if (mx > UNDOCK_THRESHOLD && mx + mw < sw - UNDOCK_THRESHOLD) {
+    isDockedToEdge = false;
+    // Restore pre-docked height but keep current position
+    if (preDockedBounds) {
+      mainWindow.setBounds({ x: mx, y: my, width: mw, height: preDockedBounds.height });
+      expandedBounds = { x: mx, y: my, width: mw, height: preDockedBounds.height };
+      preDockedBounds = null;
+    }
+  }
+}
+
+// ── Minimize to floating bubble ──
+function minimizeToBubble() {
+  if (!isMinimized) {
+    const [w, h] = mainWindow.getSize();
+    const [mx, my] = mainWindow.getPosition();
+    expandedBounds = { x: mx, y: my, width: w, height: h };
+  }
+
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+  const dockCenterX = expandedBounds.x + expandedBounds.width / 2;
+  const onLeftSide = dockCenterX < sw / 2;
+  const bx = onLeftSide ? 8 : sw - BUBBLE_SIZE - 8;
+  const by = Math.max(8, Math.min(expandedBounds.y, sh - BUBBLE_SIZE - 8));
+
+  // Hide main window
+  mainWindow.hide();
+
+  // Create a separate non-transparent bubble window
+  if (bubbleWindow && !bubbleWindow.isDestroyed()) bubbleWindow.close();
+  bubbleWindow = new BrowserWindow({
+    width: BUBBLE_SIZE,
+    height: BUBBLE_SIZE,
+    x: bx, y: by,
+    frame: false,
+    transparent: false,
+    resizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    backgroundColor: '#3b82f6',
+    webPreferences: { contextIsolation: true, nodeIntegration: false },
+  });
+
+  // Load inline HTML — entire window is opaque with CSS border-radius for visual rounding.
+  // The body is a drag region; mouseup on the inner circle closes the bubble to trigger restore.
+  bubbleWindow.loadURL('data:text/html,' + encodeURIComponent(`<!DOCTYPE html><html><head><style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;overflow:hidden;background:#3b82f6;user-select:none;
+      border-radius:50%;-webkit-app-region:drag}
+    body{display:flex;align-items:center;justify-content:center}
+    .hit{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      -webkit-app-region:no-drag;cursor:pointer;border-radius:50%}
+    .hit:hover{filter:brightness(1.15)}
+    .hit:active{filter:brightness(0.85)}
+    .t{color:white;font-family:sans-serif;font-weight:800;font-size:24px;
+      text-shadow:0 1px 4px rgba(0,0,0,0.3);pointer-events:none}
+  </style></head><body>
+    <div class="hit" id="hit"><span class="t">T</span></div>
+    <script>
+      document.getElementById('hit').addEventListener('mouseup', function(){
+        window.close();
+      });
+    </script>
+  </body></html>`));
+
+  // Clamp bubble to screen bounds after drag moves
+  bubbleWindow.on('moved', () => {
+    if (bubbleWindow.isDestroyed()) return;
+    const { width: sw2, height: sh2 } = screen.getPrimaryDisplay().workAreaSize;
+    let [bx2, by2] = bubbleWindow.getPosition();
+    let clamped = false;
+    if (bx2 < 0) { bx2 = 0; clamped = true; }
+    if (by2 < 0) { by2 = 0; clamped = true; }
+    if (bx2 + BUBBLE_SIZE > sw2) { bx2 = sw2 - BUBBLE_SIZE; clamped = true; }
+    if (by2 + BUBBLE_SIZE > sh2) { by2 = sh2 - BUBBLE_SIZE; clamped = true; }
+    if (clamped) bubbleWindow.setPosition(bx2, by2);
+  });
+
+  // When the bubble is closed (by click or otherwise), restore the main window
+  bubbleWindow.on('closed', () => {
+    bubbleWindow = null;
+    restoreFromBubble();
+  });
+
+  isMinimized = true;
+  config.minimized = true;
+  saveConfig(config);
+}
+
+function restoreFromBubble() {
+  if (!isMinimized) return;
+
+  // Get bubble position to place dock near it
+  let bx = expandedBounds.x, by = expandedBounds.y;
+  if (bubbleWindow && !bubbleWindow.isDestroyed()) {
+    // Remove the closed listener to avoid re-entrant restore call
+    bubbleWindow.removeAllListeners('closed');
+    [bx, by] = bubbleWindow.getPosition();
+    bubbleWindow.close();
+    bubbleWindow = null;
+  }
+
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+  const dockW = expandedBounds.width;
+  const dockH = expandedBounds.height;
+  let x = Math.max(0, Math.min(bx, sw - dockW));
+  let y = Math.max(0, Math.min(by, sh - dockH));
+  expandedBounds = { x, y, width: dockW, height: dockH };
+
+  mainWindow.setBounds(expandedBounds);
+  mainWindow.show();
+  mainWindow.focus();
+
+  isMinimized = false;
+  config.minimized = false;
+  saveConfig(config);
+  resetAutoHideTimer();
+}
+
+// (bubble is now a separate window — clamp/snap handled in its 'moved' event)
+
+// ── Auto-hide timer (two-phase: normal + 3s warning) ──
+let autoHideWarningTimer = null;
+
+function resetAutoHideTimer() {
+  if (autoHideTimer) { clearTimeout(autoHideTimer); autoHideTimer = null; }
+  if (autoHideWarningTimer) { clearTimeout(autoHideWarningTimer); autoHideWarningTimer = null; }
+  const seconds = config.autoHideSeconds;
+  if (seconds > 0 && !isMinimized) {
+    const warningLeadTime = 3;
+    if (seconds > warningLeadTime) {
+      // Phase 1: wait, then send warning
+      autoHideTimer = setTimeout(() => {
+        if (isMinimized) return;
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('auto-hide-warning');
+        }
+        // Phase 2: wait 3 more seconds then minimize
+        autoHideWarningTimer = setTimeout(() => {
+          if (!isMinimized) minimizeToBubble();
+        }, warningLeadTime * 1000);
+      }, (seconds - warningLeadTime) * 1000);
+    } else {
+      // Short timer: just send warning immediately and minimize after full duration
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('auto-hide-warning');
+      }
+      autoHideTimer = setTimeout(() => {
+        if (!isMinimized) minimizeToBubble();
+      }, seconds * 1000);
+    }
+  }
+}
+
+function setAutoHide(seconds) {
+  config.autoHideSeconds = seconds;
+  saveConfig(config);
+  mainWindow.webContents.send('auto-hide-changed', seconds);
+  resetAutoHideTimer();
+}
+
+// ── Tray ──
+function createTray() {
+  const icon = nativeImage.createFromDataURL(
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAOklEQVQ4T2NkYPj/n4EBBRgZGRkZGBgYmNAEUMWYGBgYGJmQNaMrIEozo4sBNTNhcwFRmokKBo8LAACq0BER9vIrHwAAAABJRU5ErkJggg=='
+  );
+  tray = new Tray(icon);
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Show / Restore', click: () => {
+      if (isMinimized) restoreFromBubble();
+      else { mainWindow.show(); mainWindow.focus(); }
+    }},
+    { type: 'separator' },
+    { label: 'Dock to Claude Code', click: () => {
+      const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+      mainWindow.setBounds({ x: sw - 300, y: 0, width: 300, height: sh });
+      mainWindow.setAlwaysOnTop(true);
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.webContents.send('set-theme', 'claude');
+    }},
+    { label: 'Minimize to Bubble', click: () => minimizeToBubble() },
+    { type: 'separator' },
+    {
+      label: 'Theme',
+      submenu: [
+        { label: 'Midnight', type: 'radio', checked: config.theme === 'midnight', click: () => setTheme('midnight') },
+        { label: 'Cobalt', type: 'radio', checked: config.theme === 'cobalt', click: () => setTheme('cobalt') },
+        { label: 'Slate', type: 'radio', checked: config.theme === 'slate', click: () => setTheme('slate') },
+        { label: 'Amethyst', type: 'radio', checked: config.theme === 'amethyst', click: () => setTheme('amethyst') },
+        { label: 'Carbon', type: 'radio', checked: config.theme === 'carbon', click: () => setTheme('carbon') },
+        { label: 'Galaxy', type: 'radio', checked: config.theme === 'galaxy', click: () => setTheme('galaxy') },
+        { label: 'Claude Code', type: 'radio', checked: config.theme === 'claude', click: () => setTheme('claude') },
+        { type: 'separator' },
+        { label: 'Hearts ★', type: 'radio', checked: config.theme === 'hearts', click: () => setTheme('hearts') },
+        { label: 'Catppuccin ★', type: 'radio', checked: config.theme === 'catppuccin', click: () => setTheme('catppuccin') },
+        { label: 'Dracula ★', type: 'radio', checked: config.theme === 'dracula', click: () => setTheme('dracula') },
+        { label: 'Tokyo Night ★', type: 'radio', checked: config.theme === 'tokyonight', click: () => setTheme('tokyonight') },
+        { label: 'Rosé Pine ★', type: 'radio', checked: config.theme === 'rosepine', click: () => setTheme('rosepine') },
+        { label: 'Synthwave ★', type: 'radio', checked: config.theme === 'synthwave', click: () => setTheme('synthwave') },
+      ]
+    },
+    {
+      label: 'Auto-Hide',
+      submenu: [
+        { label: 'Never', type: 'radio', checked: config.autoHideSeconds === 0, click: () => setAutoHide(0) },
+        { label: '5 seconds', type: 'radio', checked: config.autoHideSeconds === 5, click: () => setAutoHide(5) },
+        { label: '10 seconds', type: 'radio', checked: config.autoHideSeconds === 10, click: () => setAutoHide(10) },
+        { label: '15 seconds', type: 'radio', checked: config.autoHideSeconds === 15, click: () => setAutoHide(15) },
+      ]
+    },
+    {
+      label: 'Always on Top',
+      type: 'checkbox',
+      checked: config.alwaysOnTop,
+      click: (item) => {
+        config.alwaysOnTop = item.checked;
+        mainWindow.setAlwaysOnTop(item.checked);
+        saveConfig(config);
+      }
+    },
+    { type: 'separator' },
+    { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } }
+  ]);
+
+  tray.setToolTip('Token Dock');
+  tray.setContextMenu(contextMenu);
+  tray.on('click', () => {
+    if (isMinimized) { restoreFromBubble(); return; }
+    if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.focus();
+  });
+}
+
+function setTheme(theme) {
+  config.theme = theme;
+  saveConfig(config);
+  mainWindow.webContents.send('set-theme', theme);
+}
+
+// ── IPC ──
+const budgetPath = path.join(__dirname, '..', '..', '.token_budget.json');
+const envPath = path.join(__dirname, '..', '..', '.env');
+
+const paidUsagePath = path.join(__dirname, '..', '..', '.paid_usage.json');
+
+ipcMain.handle('get-paid-usage', () => {
+  try { return JSON.parse(fs.readFileSync(paidUsagePath, 'utf-8')); }
+  catch { return null; }
+});
+
+ipcMain.handle('get-budget', () => {
+  try { return JSON.parse(fs.readFileSync(budgetPath, 'utf-8')); }
+  catch { return null; }
+});
+ipcMain.handle('get-env', () => {
+  try {
+    const content = fs.readFileSync(envPath, 'utf-8');
+    const env = {};
+    content.split('\n').forEach(line => {
+      const t = line.trim();
+      if (t && !t.startsWith('#')) {
+        const [k, ...v] = t.split('=');
+        if (k && v.length) env[k.trim()] = v.join('=').trim();
+      }
+    });
+    return env;
+  } catch { return {}; }
+});
+// ── Live Provider Health Checks ──
+const https = require('https');
+const http = require('http');
+
+function pingUrl(url, headers, timeoutMs) {
+  return new Promise((resolve) => {
+    const mod = url.startsWith('https') ? https : http;
+    const req = mod.get(url, { headers, timeout: timeoutMs }, (res) => {
+      res.resume(); // drain
+      resolve(res.statusCode < 500);
+    });
+    req.on('error', () => resolve(false));
+    req.on('timeout', () => { req.destroy(); resolve(false); });
+  });
+}
+
+function readEnvKeys() {
+  try {
+    const content = fs.readFileSync(envPath, 'utf-8');
+    const env = {};
+    content.split('\n').forEach(line => {
+      const t = line.trim();
+      if (t && !t.startsWith('#')) {
+        const [k, ...v] = t.split('=');
+        if (k && v.length) env[k.trim()] = v.join('=').trim();
+      }
+    });
+    return env;
+  } catch { return {}; }
+}
+
+ipcMain.handle('check-providers', async () => {
+  const env = readEnvKeys();
+  const timeout = 5000;
+  const results = {};
+
+  // Run all checks in parallel for speed
+  const checks = [];
+
+  // Groq
+  if (env.GROQ_API_KEY && env.GROQ_API_KEY.length > 5) {
+    checks.push(pingUrl('https://api.groq.com/openai/v1/models', { 'Authorization': 'Bearer ' + env.GROQ_API_KEY }, timeout).then(ok => { results.groq = ok ? 'online' : 'offline'; }));
+  } else { results.groq = 'no-key'; }
+
+  // Gemini
+  if (env.GEMINI_API_KEY && env.GEMINI_API_KEY.length > 5) {
+    checks.push(pingUrl('https://generativelanguage.googleapis.com/v1beta/models?key=' + env.GEMINI_API_KEY, {}, timeout).then(ok => { results.gemini = ok ? 'online' : 'offline'; }));
+  } else { results.gemini = 'no-key'; }
+
+  // OpenRouter
+  if (env.OPENROUTER_API_KEY && env.OPENROUTER_API_KEY.length > 5) {
+    checks.push(pingUrl('https://openrouter.ai/api/v1/models', { 'Authorization': 'Bearer ' + env.OPENROUTER_API_KEY }, timeout).then(ok => { results.openrouter = ok ? 'online' : 'offline'; }));
+  } else { results.openrouter = 'no-key'; }
+
+  // HuggingFace
+  if (env.HUGGINGFACE_API_KEY && env.HUGGINGFACE_API_KEY.length > 5) {
+    checks.push(pingUrl('https://api-inference.huggingface.co/models', { 'Authorization': 'Bearer ' + env.HUGGINGFACE_API_KEY }, timeout).then(ok => { results.huggingface = ok ? 'online' : 'offline'; }));
+  } else { results.huggingface = 'no-key'; }
+
+  // Mistral
+  if (env.MISTRAL_API_KEY && env.MISTRAL_API_KEY.length > 5) {
+    checks.push(pingUrl('https://api.mistral.ai/v1/models', { 'Authorization': 'Bearer ' + env.MISTRAL_API_KEY }, timeout).then(ok => { results.mistral = ok ? 'online' : 'offline'; }));
+  } else { results.mistral = 'no-key'; }
+
+  // Ollama (local)
+  const ollamaBase = env.OLLAMA_API_BASE || 'http://localhost:11434';
+  checks.push(pingUrl(ollamaBase + '/api/version', {}, 2000).then(ok => { results.ollama = ok ? 'online' : 'offline'; }));
+
+  await Promise.all(checks);
+  return results;
+});
+
+ipcMain.handle('set-speed-tier', (_, tier) => {
+  config.speedTier = tier;
+  saveConfig(config);
+  // Write tier to a file the smart router can read
+  try {
+    fs.writeFileSync(
+      path.join(__dirname, '..', '..', '.speed_tier.json'),
+      JSON.stringify({ tier, timestamp: Date.now() })
+    );
+  } catch(e) { console.error('Speed tier write error:', e); }
+});
+ipcMain.handle('get-speed-tier', () => config.speedTier || 'standard');
+
+ipcMain.handle('get-theme', () => config.theme);
+ipcMain.handle('get-auto-hide', () => config.autoHideSeconds);
+ipcMain.handle('set-theme', (_, theme) => setTheme(theme));
+ipcMain.handle('set-auto-hide', (_, seconds) => setAutoHide(seconds));
+ipcMain.handle('reset-auto-hide-timer', () => resetAutoHideTimer());
+ipcMain.handle('minimize-to-bubble', () => minimizeToBubble());
+ipcMain.handle('restore-from-bubble', () => restoreFromBubble());
+ipcMain.handle('move-window-by', (_, dx, dy) => {
+  if (!mainWindow) return;
+  const [x, y] = mainWindow.getPosition();
+  mainWindow.setPosition(x + dx, y + dy);
+});
+ipcMain.handle('get-window-pos', () => {
+  if (!mainWindow) return { x: 0, y: 0 };
+  const [x, y] = mainWindow.getPosition();
+  return { x, y };
+});
+ipcMain.handle('hide-window', () => mainWindow.hide());
+ipcMain.handle('set-ignore-mouse', (_, ignore, opts) => {
+  if (mainWindow) mainWindow.setIgnoreMouseEvents(ignore, opts || {});
+});
+ipcMain.handle('get-premium', () => config.premiumUnlocked);
+ipcMain.handle('set-opacity', (_, val) => { if(mainWindow) mainWindow.setOpacity(val); });
+ipcMain.handle('set-premium', (_, val) => { config.premiumUnlocked = val; saveConfig(config); });
+ipcMain.handle('send-notification', (_, title, body) => {
+  const { Notification } = require('electron');
+  if (Notification.isSupported()) {
+    new Notification({ title, body }).show();
+  }
+});
+ipcMain.handle('open-external', (_, url) => shell.openExternal(url));
+ipcMain.handle('dock-to-claude', () => {
+  if (!mainWindow) return;
+  // Find the focused/active screen and dock to the right side of the work area
+  // This places Token Dock flush against the right edge, full height,
+  // like it's part of the terminal environment
+  const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
+  const dockWidth = 300;
+  mainWindow.setBounds({
+    x: sw - dockWidth,
+    y: 0,
+    width: dockWidth,
+    height: sh,
+  });
+  mainWindow.setAlwaysOnTop(true);
+  config.alwaysOnTop = true;
+  config.dockWidth = dockWidth;
+  config.dockPosition = { x: sw - dockWidth, y: 0 };
+  saveConfig(config);
+  expandedBounds = { x: sw - dockWidth, y: 0, width: dockWidth, height: sh };
+});
+
+ipcMain.handle('take-screenshot', async () => {
+  if (!mainWindow) return null;
+  const img = await mainWindow.webContents.capturePage();
+  const p = path.join(__dirname, '..', 'screenshot.png');
+  fs.writeFileSync(p, img.toPNG());
+  return p;
+});
+
+ipcMain.handle('toggle-always-on-top', () => {
+  const next = !mainWindow.isAlwaysOnTop();
+  mainWindow.setAlwaysOnTop(next);
+  config.alwaysOnTop = next;
+  saveConfig(config);
+  return next;
+});
+
+// ── Settings: read/write .env keys ──
+ipcMain.handle('get-keys', () => {
+  try {
+    const content = fs.readFileSync(envPath, 'utf-8');
+    const keys = {};
+    content.split('\n').forEach(line => {
+      const t = line.trim();
+      if (t && !t.startsWith('#')) {
+        const [k, ...v] = t.split('=');
+        if (k && v.length) keys[k.trim()] = v.join('=').trim();
+      }
+    });
+    return keys;
+  } catch { return {}; }
+});
+
+ipcMain.handle('save-keys', (_, keys) => {
+  try {
+    let lines = [
+      '# ============================================',
+      '# Free Inference Stack — API Keys',
+      '# ============================================',
+      '',
+    ];
+    const order = ['GROQ_API_KEY','GEMINI_API_KEY','OPENROUTER_API_KEY','HUGGINGFACE_API_KEY','MISTRAL_API_KEY','OLLAMA_API_BASE','LITELLM_MASTER_KEY','LITELLM_PORT'];
+    for (const k of order) {
+      if (keys[k] !== undefined) lines.push(`${k}=${keys[k]}`);
+    }
+    // Any extra keys not in order
+    for (const [k, v] of Object.entries(keys)) {
+      if (!order.includes(k)) lines.push(`${k}=${v}`);
+    }
+    fs.writeFileSync(envPath, lines.join('\n') + '\n');
+    return true;
+  } catch (e) {
+    console.error('Save keys error:', e);
+    return false;
+  }
+});
+
+ipcMain.handle('is-first-run', () => {
+  try {
+    const content = fs.readFileSync(envPath, 'utf-8');
+    // If no real keys are set, it's first run
+    return !content.includes('gsk_') && !content.includes('AIza') && !content.includes('sk-or-v1-');
+  } catch {
+    return true; // No .env at all = first run
+  }
+});
+
+// ── Error Handling ──
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT:', err);
+  fs.writeFileSync(path.join(__dirname, '..', 'crash.log'),
+    `${new Date().toISOString()}\n${err.stack || err}\n`, { flag: 'a' });
+});
+
+// ── Lifecycle ──
+app.whenReady().then(() => { createWindow(); createTray(); });
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

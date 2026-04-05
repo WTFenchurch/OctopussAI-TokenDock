@@ -1,0 +1,83 @@
+Free Inference Stack License
+Copyright (c) 2026 WTFenchurchIII (REDACTED_AUTHOR). All rights reserved.
+
+================================================================================
+ORIGINAL AUTHOR RIGHTS AND PROTECTIONS
+================================================================================
+
+1. GRANT OF LICENSE
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to use,
+   copy, modify, merge, publish, and distribute copies of the Software, subject
+   to the following conditions:
+
+2. ORIGINAL AUTHOR DONATION LINKS — IMMUTABLE
+   The donation links embedded in this Software (PayPal business ID: 35NCEDPRRGTP6
+   and Bitcoin address: bc1qhgafyepzp0r4sgntv725ywwdaqcvxdgqh5ry9v) are the
+   permanent property of the Original Author (WTFenchurchIII / REDACTED_AUTHOR).
+
+   a) These links MUST remain functional and unmodified in all copies,
+      derivatives, forks, and distributions of this Software.
+   b) Derivative works MAY add additional donation options for derivative
+      authors, but MUST NOT remove, replace, disable, obfuscate, or redirect
+      the Original Author's donation links.
+   c) The integrity verification system for donation links MUST NOT be
+      disabled, bypassed, or modified to accept different values.
+   d) Only WTFenchurchIII (REDACTED_AUTHOR) (or a successor explicitly designated in writing)
+      may modify the Original Author donation links.
+
+3. ORIGINAL CODEBASE OWNERSHIP
+   All code committed up to and including the initial public release constitutes
+   the "Original Codebase" and is solely owned by WTFenchurchIII (REDACTED_AUTHOR).
+
+   a) The Original Author retains full rights to the Original Codebase
+      regardless of any forks, derivatives, or contributions.
+   b) The Original Author may, at any time and for any reason:
+      - Revoke the license for any specific fork or derivative
+      - Require removal of the Original Codebase from any derivative work
+      - Change the license terms for future versions
+      - Relicense the Original Codebase under different terms
+   c) Contributors to the Original Codebase grant the Original Author an
+      irrevocable, worldwide, royalty-free license to their contributions.
+
+4. FORK AND DERIVATIVE CONTROLS
+   a) All forks and derivatives MUST prominently display attribution to the
+      Original Author: "Based on Free Inference Stack by WTFenchurchIII"
+   b) Forks MUST NOT misrepresent themselves as the original project.
+   c) The Original Author reserves the right to request removal of any fork
+      that violates these terms.
+   d) Commercial use of the Software is permitted, provided all other terms
+      of this license are met, including preservation of donation links.
+
+5. CODE INTEGRITY
+   a) The Software contains integrity verification mechanisms for core
+      components. Disabling, bypassing, or tampering with these mechanisms
+      constitutes a violation of this license.
+   b) The integrity system uses cryptographic hashing designed to be
+      resistant to current and future computational attacks.
+
+6. QUANTUM COMPUTING PREPAREDNESS
+   a) The integrity verification system in this Software is designed with
+      quantum-resistant considerations.
+   b) As quantum computing advances, the Original Author reserves the right
+      to update integrity mechanisms and require all derivatives to adopt
+      the updated mechanisms within 90 days of publication.
+
+7. DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   ORIGINAL AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+8. ENFORCEMENT
+   Any violation of Sections 2, 3, 4, or 5 automatically terminates the
+   license granted herein. The Original Author may pursue legal remedies
+   for violations, including but not limited to DMCA takedown requests.
+
+================================================================================
+Original Author: WTFenchurchIII - He always finds such Curious things!
+GitHub: WTFenchurchIII
+Date: April 4, 2026
+================================================================================

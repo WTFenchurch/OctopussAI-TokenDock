@@ -1,0 +1,102 @@
+[
+  {
+    "test": "index.html loads",
+    "pass": true,
+    "detail": "Page loaded without crash"
+  },
+  {
+    "test": "Dashboard renders",
+    "pass": true,
+    "detail": "Dashboard rendered"
+  },
+  {
+    "test": "Theme selector exists",
+    "pass": true,
+    "detail": "Found"
+  },
+  {
+    "test": "Theme options count",
+    "pass": true,
+    "detail": "13 themes"
+  },
+  {
+    "test": "Theme switch changes CSS",
+    "pass": true,
+    "detail": "Before: #3b82f6, After: #bd93f9"
+  },
+  {
+    "test": "Appearance panel hidden initially",
+    "pass": true,
+    "detail": "display: \"none\""
+  },
+  {
+    "test": "Shimmer overlay exists",
+    "pass": true,
+    "detail": "Found"
+  },
+  {
+    "test": "Shimmer toggles on",
+    "pass": true,
+    "detail": "shimmerOn: true"
+  },
+  {
+    "test": "Shimmer overlay active",
+    "pass": true,
+    "detail": "active class: true"
+  },
+  {
+    "test": "Shimmer toggles off",
+    "pass": true,
+    "detail": "shimmerOn: false"
+  },
+  {
+    "test": "Opacity decreases",
+    "pass": true,
+    "detail": "Before: 0.92, After: 0.82"
+  },
+  {
+    "test": "Rain config exists for catppuccin",
+    "pass": true,
+    "detail": "exists: true"
+  },
+  {
+    "test": "Theme rain starts",
+    "pass": true,
+    "detail": "themeRainOn: true"
+  },
+  {
+    "test": "Rain overlay active",
+    "pass": true,
+    "detail": "active class: true"
+  },
+  {
+    "test": "Hearts mode on donate",
+    "pass": true,
+    "detail": "hearts-mode: true"
+  },
+  {
+    "test": "Section headers exist",
+    "pass": true,
+    "detail": "3 sections"
+  },
+  {
+    "test": "Data-action elements",
+    "pass": true,
+    "detail": "25 actionable elements"
+  },
+  {
+    "test": "Zero inline handlers",
+    "pass": true,
+    "detail": "0 inline handlers found"
+  },
+  {
+    "test": "Effect selector exists",
+    "pass": true,
+    "detail": "Found"
+  },
+  {
+    "test": "Settings flip opens",
+    "pass": true,
+    "detail": "settingsOpen: true"
+  }
+]

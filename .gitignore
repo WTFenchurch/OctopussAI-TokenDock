@@ -1,0 +1,39 @@
+# ── SECRETS — NEVER COMMIT ──
+.env
+.env.local
+.env.production
+.env.*
+!.env.example
+.token_budget.json
+.speed_tier.json
+.paid_usage.json
+**/token-dock-config.json
+
+# ── Node ──
+node_modules/
+dist/
+*.log
+npm-debug.log*
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ── Electron ──
+packages/token-dock/node_modules/
+packages/token-dock/dist/
+crash.log
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo

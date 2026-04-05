@@ -1,0 +1,306 @@
+# ============================================
+# LiteLLM Proxy Configuration — Task-Aware Routing
+# ============================================
+# Routes by TASK COMPLEXITY, not just availability.
+#
+# Request model "simple", "medium", "complex", or "code"
+# and the router picks the cheapest capable free model.
+# Paid tiers are ONLY used as absolute last resort.
+#
+# Principle: Never send a simple task to a 70B model
+#            when an 8B model handles it fine for free.
+# ============================================
+
+model_list:
+
+  # ══════════════════════════════════════════
+  # SIMPLE — classification, extraction, formatting, yes/no,
+  #          summarization, translation, short Q&A
+  #          Small models handle these perfectly.
+  # ══════════════════════════════════════════
+
+  # Priority 1: Groq 8B — blazing fast, free, perfect for simple
+  - model_name: "simple"
+    litellm_params:
+      model: groq/llama-3.1-8b-instant
+      api_key: os.environ/GROQ_API_KEY
+      max_tokens: 256
+    model_info:
+      description: "Simple tasks — Groq 8B (fastest, free)"
+
+  # Priority 2: Ollama local 8B — unlimited, no quota burn
+  - model_name: "simple"
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: os.environ/OLLAMA_API_BASE
+      max_tokens: 256
+    model_info:
+      description: "Simple tasks — Ollama 8B (unlimited local)"
+
+  # Priority 3: Gemini Flash Lite — lightweight cloud fallback
+  - model_name: "simple"
+    litellm_params:
+      model: gemini/gemini-2.0-flash-lite
+      api_key: os.environ/GEMINI_API_KEY
+      max_tokens: 256
+    model_info:
+      description: "Simple tasks — Gemini Lite (free tier)"
+
+  # Priority 4: HuggingFace 8B — slow but free
+  - model_name: "simple"
+    litellm_params:
+      model: huggingface/mistralai/Mistral-7B-Instruct-v0.3
+      api_key: os.environ/HUGGINGFACE_API_KEY
+      max_tokens: 256
+    model_info:
+      description: "Simple tasks — HuggingFace Mistral 7B (free, slower)"
+
+  # Priority 5: OpenRouter free 7B
+  - model_name: "simple"
+    litellm_params:
+      model: openrouter/mistralai/mistral-7b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 256
+    model_info:
+      description: "Simple tasks — OpenRouter Mistral 7B (free)"
+
+  # ══════════════════════════════════════════
+  # MEDIUM — multi-step reasoning, longer generation,
+  #          analysis, detailed Q&A, structured output
+  #          Needs a capable model but 70B free tiers work.
+  # ══════════════════════════════════════════
+
+  # Priority 1: Groq 70B — fast + capable, free
+  - model_name: "medium"
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+      max_tokens: 1024
+    model_info:
+      description: "Medium tasks — Groq 70B (fast, free)"
+
+  # Priority 2: Gemini Flash — strong reasoning, free tier
+  - model_name: "medium"
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GEMINI_API_KEY
+      max_tokens: 1024
+    model_info:
+      description: "Medium tasks — Gemini Flash (free tier)"
+
+  # Priority 3: OpenRouter Llama 70B — free
+  - model_name: "medium"
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.3-70b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 1024
+    model_info:
+      description: "Medium tasks — OpenRouter 70B (free)"
+
+  # Priority 4: Mistral Small — free experimental
+  - model_name: "medium"
+    litellm_params:
+      model: mistral/mistral-small-latest
+      api_key: os.environ/MISTRAL_API_KEY
+      max_tokens: 1024
+    model_info:
+      description: "Medium tasks — Mistral Small (free)"
+
+  # Priority 5: Ollama local 8B — unlimited but less capable for medium
+  - model_name: "medium"
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: os.environ/OLLAMA_API_BASE
+      max_tokens: 1024
+    model_info:
+      description: "Medium tasks — Ollama 8B (local fallback)"
+
+  # ══════════════════════════════════════════
+  # COMPLEX — long-form writing, deep analysis, planning,
+  #           multi-turn reasoning, creative tasks
+  #           Needs strongest available models.
+  #           Exhausts ALL free options before paid.
+  # ══════════════════════════════════════════
+
+  # Priority 1: Groq 70B — best free option
+  - model_name: "complex"
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+      max_tokens: 4096
+    model_info:
+      description: "Complex tasks — Groq 70B (free, try first)"
+
+  # Priority 2: Gemini Flash — strong reasoning
+  - model_name: "complex"
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GEMINI_API_KEY
+      max_tokens: 4096
+    model_info:
+      description: "Complex tasks — Gemini Flash (free tier)"
+
+  # Priority 3: OpenRouter 70B free
+  - model_name: "complex"
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.3-70b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 4096
+    model_info:
+      description: "Complex tasks — OpenRouter 70B (free)"
+
+  # Priority 4: Mistral Small
+  - model_name: "complex"
+    litellm_params:
+      model: mistral/mistral-small-latest
+      api_key: os.environ/MISTRAL_API_KEY
+      max_tokens: 4096
+    model_info:
+      description: "Complex tasks — Mistral Small (free)"
+
+  # Priority 5: HuggingFace 8B — worse quality but free
+  - model_name: "complex"
+    litellm_params:
+      model: huggingface/mistralai/Mistral-7B-Instruct-v0.3
+      api_key: os.environ/HUGGINGFACE_API_KEY
+      max_tokens: 4096
+    model_info:
+      description: "Complex tasks — HuggingFace Mistral 7B (free, degraded)"
+
+  # Priority 6: Ollama local — always available
+  - model_name: "complex"
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: os.environ/OLLAMA_API_BASE
+      max_tokens: 4096
+    model_info:
+      description: "Complex tasks — Ollama local (last free resort)"
+
+  # ══════════════════════════════════════════
+  # CODE — code generation, debugging, refactoring
+  #        Specialized code models first, then general.
+  # ══════════════════════════════════════════
+
+  # Priority 1: Codestral — purpose-built for code, free
+  - model_name: "code"
+    litellm_params:
+      model: mistral/codestral-latest
+      api_key: os.environ/MISTRAL_API_KEY
+      max_tokens: 2048
+    model_info:
+      description: "Code tasks — Codestral (free, code-specialized)"
+
+  # Priority 2: Groq 70B — fast, handles code well
+  - model_name: "code"
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+      max_tokens: 2048
+    model_info:
+      description: "Code tasks — Groq 70B (free, general)"
+
+  # Priority 3: Gemini Flash — good at code
+  - model_name: "code"
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GEMINI_API_KEY
+      max_tokens: 2048
+    model_info:
+      description: "Code tasks — Gemini Flash (free tier)"
+
+  # Priority 4: OpenRouter 70B
+  - model_name: "code"
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.3-70b-instruct:free
+      api_key: os.environ/OPENROUTER_API_KEY
+      max_tokens: 2048
+    model_info:
+      description: "Code tasks — OpenRouter 70B (free)"
+
+  # Priority 5: Ollama CodeLlama local
+  - model_name: "code"
+    litellm_params:
+      model: ollama/codellama:13b
+      api_base: os.environ/OLLAMA_API_BASE
+      max_tokens: 2048
+    model_info:
+      description: "Code tasks — Ollama CodeLlama (local)"
+
+  # ══════════════════════════════════════════
+  # PAID LAST RESORT — only if ALL free tiers are exhausted
+  # Uncomment and add keys ONLY if you decide to enable paid.
+  # These are the cheapest paid options available.
+  # ══════════════════════════════════════════
+
+  # - model_name: "paid-fallback"
+  #   litellm_params:
+  #     model: openrouter/meta-llama/llama-3.3-70b-instruct
+  #     api_key: os.environ/OPENROUTER_API_KEY
+  #     max_tokens: 4096
+  #   model_info:
+  #     description: "PAID — OpenRouter Llama 70B (~$0.40/M tokens, cheapest paid)"
+
+  # ══════════════════════════════════════════
+  # DIRECT ACCESS — use specific providers by name
+  # ══════════════════════════════════════════
+
+  - model_name: "groq-fast"
+    litellm_params:
+      model: groq/llama-3.1-8b-instant
+      api_key: os.environ/GROQ_API_KEY
+
+  - model_name: "groq-large"
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+
+  - model_name: "gemini"
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: "local"
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: os.environ/OLLAMA_API_BASE
+
+  - model_name: "local-code"
+    litellm_params:
+      model: ollama/codellama:13b
+      api_base: os.environ/OLLAMA_API_BASE
+
+# ── Routing Strategy ──
+router_settings:
+  routing_strategy: "usage-based-routing-v2"
+  num_retries: 3
+  timeout: 30
+  allowed_fails: 1  # Fail fast, move to next free provider quickly
+  cooldown_time: 60  # Back off exhausted providers for 60s
+  fallbacks:
+    - simple:
+      - groq-fast
+      - local
+    - medium:
+      - groq-large
+      - gemini
+      - local
+    - complex:
+      - groq-large
+      - gemini
+      - local
+    - code:
+      - groq-large
+      - gemini
+      - local-code
+      - local
+
+# ── General Settings ──
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  drop_params: true
+
+litellm_settings:
+  set_verbose: false
+  request_timeout: 30
+  num_retries: 2
+  max_budget: 0  # $0 budget — blocks any paid calls unless you raise this
