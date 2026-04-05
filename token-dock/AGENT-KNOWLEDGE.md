@@ -122,11 +122,9 @@ function handleAction(e) {
 
 ### Pre-Commit Information Leak Check (Critical)
 - Before EVERY commit, scan for references to unreleased/private projects
-- Currently PRIVATE projects that must NEVER appear in public commits:
-  - Octopuss AIOS
-  - Any reference to "AIOS", "octopuss-aios", "compassionate AI OS"
-- Scan commit messages, README, source code, comments for these terms
+- Scan commit messages, README, source code, comments for private project names
 - **Rule: Only commit what the user explicitly approves for public release**
+- **Rule: Never reference private/unreleased projects by name in public code**
 
 ## Performance Notes
 - `render()` replaces `innerHTML` every 30 seconds — acceptable for this refresh rate
