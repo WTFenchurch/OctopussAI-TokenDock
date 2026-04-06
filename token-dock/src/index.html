@@ -4342,9 +4342,12 @@
           try{const prem=await dock.getPremium();if(prem){premiumUnlocked=true;document.body.classList.add('premium-unlocked');renderTP();}updatePremiumLocks();}catch(e){console.warn('premium:',e);}
           try{const savedTier=await dock.getSpeedTier();if(savedTier&&SPEED_TIERS[savedTier])activeTier=savedTier;}catch(e){console.warn('tier:',e);}
           try{await checkProviders();}catch(e){console.warn('providers:',e);}
-          try{await loadBudget();}catch(e){console.warn('budget:',e);}
-          try{await loadPaidUsage();}catch(e){console.warn('paid:',e);}
+          try{await loadBudget();console.log('[INIT] Budget loaded, budgetLastUpdated='+budgetLastUpdated);}catch(e){console.warn('budget:',e);}
+          try{await loadPaidUsage();console.log('[INIT] Paid usage loaded');}catch(e){console.warn('paid:',e);}
+          console.log('[INIT] Re-rendering with data...');
           render();
+          // Force animation restart after data render
+          requestAnimationFrame(function(){startTierAnimation();});
           checkFirstRun();
         }
         // Budget refresh every 30s
