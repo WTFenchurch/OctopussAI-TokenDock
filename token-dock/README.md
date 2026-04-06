@@ -156,6 +156,46 @@ Token Dock
 └── package.json
 ```
 
+## Data Accuracy
+
+Token Dock is a monitoring dashboard. The accuracy of what it displays depends on how data flows into it.
+
+### Free Provider Tracking
+| Source | Method | Accuracy |
+|--------|--------|----------|
+| **Ollama (local)** | Proxy intercept — reads exact `eval_count` from every response | **99% — measured** |
+| **Groq, Gemini, OpenRouter, Mistral** | Token router accepts POST /log from external tools | **99% when connected** |
+| **All free providers** | Health check status (online/offline) | **Real-time** |
+| **Reset countdowns** | Computed from known reset times per provider | **Accurate** |
+
+### Paid Subscription Tracking
+| Source | Method | Accuracy |
+|--------|--------|----------|
+| **Claude Max** | Browser calibration — reads claude.ai/settings/usage | **99% when calibrated** |
+| **GitHub Copilot** | Browser calibration — reads github.com/settings/copilot | **99% when calibrated** |
+| **ChatGPT Plus** | No usage page exists — requires manual input or estimation | **Unknown until calibrated** |
+| **Grok** | No usage page exists — requires manual input or estimation | **Unknown until calibrated** |
+| **Gemini Advanced** | No usage page exists — requires manual input or estimation | **Unknown until calibrated** |
+
+### How to Get Accurate Data
+
+1. **Free providers:** Point your tools at Token Dock's proxy (`http://127.0.0.1:4444/ollama/api/generate`) instead of directly at Ollama. Token Dock reads the exact token count from every response.
+
+2. **Paid subscriptions with usage pages (Claude, Copilot):** Use the 📸 Calibrate button in the Paid section. Upload a screenshot of the provider's usage page — Token Dock OCRs it and updates the gauges.
+
+3. **Paid subscriptions without usage pages (ChatGPT, Grok, Gemini):** These providers do not expose usage data to consumers. Token Dock shows "unknown" accuracy until we find a path. R&D is active on this.
+
+4. **Token router:** Any tool can POST usage data to `http://127.0.0.1:4444/log` with `{tier, tokens, provider, model}`. Token Dock displays whatever it receives — accuracy depends on the source.
+
+### What Token Dock Does NOT Do
+- Does not estimate data and present it as measured
+- Does not access your accounts without your explicit action
+- Does not store or transmit your credentials
+- Does not modify API requests passing through the proxy
+
+### Stale Data Warning
+If the budget file date doesn't match today, Token Dock shows a yellow warning banner with the actual date of the data. It will never silently show old numbers as if they were current.
+
 ## Part of the Free Inference Stack
 
 Token Dock is the monitoring dashboard for the [Free Inference Stack](https://github.com/WTFenchurch) — a complete multi-provider setup that routes AI requests through free tiers first, with smart task classification and automatic fallback.
