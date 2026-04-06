@@ -2777,8 +2777,8 @@
           otto.x += (otto.homeX - otto.x) * 0.012;
           otto.y += (otto.homeY - otto.y) * 0.012;
           ottoEl.classList.remove('swimming','spotted','gulping','satisfied','scooting');
-          // Hard reset: if idle for >3 sec and no funny action active, ensure mouth and tongue are clean
-          if(otto.stateTimer > 180 && !_funnyActive) {
+          // Hard reset: every 60 frames (~1 sec) when idle + no funny action, force clean face
+          if(otto.stateTimer % 60 === 0 && !_funnyActive) {
             setMouth(otto, 'neutral');
             var stuckTongue = ottoEl.querySelector('.otto-tongue');
             if(stuckTongue) stuckTongue.style.display='none';
@@ -3193,8 +3193,13 @@
     }
 
     function tryFunnyAction(otto, stg, frame, tokenCount) {
-      // Safety: if stuck active >5 sec, force clear
-      if (_funnyActive && frame - _funnyActiveSince > 300) _funnyActive = false;
+      // Safety: if stuck active >3 sec, force clear + reset face
+      if (_funnyActive && frame - _funnyActiveSince > 180) {
+        _funnyActive = false;
+        setMouth(otto, 'neutral');
+        var t = otto.el.querySelector('.otto-tongue');
+        if(t) t.style.display='none';
+      }
       if (_funnyActive) return;
       _funnyTimer++;
       // Base interval: every ~4 sec. With more tokens eaten, more frequent (down to ~1.5 sec)
