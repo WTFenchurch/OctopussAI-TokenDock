@@ -1955,23 +1955,9 @@
     // ══════════════════════════════════════════════════════════════════════
 
     var tierAnimId = null;
-    var tierParticles = []; // kept for themed fallback compatibility
-    var ottoState = null;
+    // Dead vars removed: tierParticles, ottoState, themeColors, tierThemeInit, tierThemeDraw
 
     // Theme color palettes for tier animations (kept for themed variants)
-    var themeColors = {
-      hearts:{bg:'#ff2266',fg:'#ffb3cc',mid:'#ff79c6',dim:'#991144',glow:'#ff99bb'},
-      catppuccin:{bg:'#cba6f7',fg:'#94e2d5',mid:'#fab387',dim:'#585b70',glow:'#f5c2e7'},
-      dracula:{bg:'#bd93f9',fg:'#f8f8f2',mid:'#ff5555',dim:'#44475a',glow:'#6272a4'},
-      tokyonight:{bg:'#7aa2f7',fg:'#c0caf5',mid:'#ff9e64',dim:'#1a1b26',glow:'#bb9af7'},
-      rosepine:{bg:'#c4a7e7',fg:'#e0def4',mid:'#f6c177',dim:'#26233a',glow:'#eb6f92'},
-      synthwave:{bg:'#e2b714',fg:'#f92aad',mid:'#36f9f6',dim:'#241b2f',glow:'#ff6ac1'},
-      galaxy:{bg:'#e0aaff',fg:'#a9def9',mid:'#fcf6bd',dim:'#10002b',glow:'#d0f4de'}
-    };
-
-    // Themed init/draw stubs (kept for backward compat)
-    var tierThemeInit = {};
-    var tierThemeDraw = {};
 
     // ── SVG Otto character template (matches icon.svg logo) ──
     function ottoSVG(tier) {
@@ -2567,12 +2553,24 @@
         mood: tier === 'economy' ? 'chill' : tier === 'standard' ? 'focused' : 'chaos',
         scale: baseScale,
         baseScale: baseScale,
-        growthScale: 1.0,     // grows with each eat
-        bouncing: false,      // bounce mode toggle
-        expelling: false,     // expel coins mode
+        growthScale: 1.0,
+        bouncing: false,
+        expelling: false,
         expelTimer: 0,
-        dizzyTimer: 0,        // dizzy after bouncing
-        burpTimer: 0          // funny burp after eating
+        dizzyTimer: 0,
+        burpTimer: 0,
+        // ── CACHED DOM REFS (eliminates 300+ querySelector/sec) ──
+        svg: el.querySelector('.otto-svg'),
+        irisL: el.querySelector('.otto-iris-left'),
+        irisR: el.querySelector('.otto-iris-right'),
+        eyeL: el.querySelector('.otto-eye-left'),
+        eyeR: el.querySelector('.otto-eye-right'),
+        mouthEl: el.querySelector('.otto-mouth'),
+        tongueEl: null, // created on demand by setMouth
+        tentGrp: el.querySelector('.otto-tentacles'),
+        browL: el.querySelector('.otto-brow-left'),
+        browR: el.querySelector('.otto-brow-right'),
+        badgeEl: null // created on demand
       };
     }
 
@@ -2806,8 +2804,7 @@
           // Hard reset: every 60 frames (~1 sec) when idle + no funny action, force clean face
           if(otto.stateTimer % 60 === 0 && !_funnyActive) {
             setMouth(otto, 'neutral');
-            var stuckTongue = ottoEl.querySelector('.otto-tongue');
-            if(stuckTongue) stuckTongue.style.display='none';
+            if(otto.tongueEl) otto.tongueEl.style.display='none';
           }
           // Funny personality actions — more frequent with more tokens eaten
           if(otto.dizzyTimer<=0) tryFunnyAction(otto, stg, frame, otto.tokensEaten);
@@ -2849,10 +2846,8 @@
           otto.stateTimer++;
           if (otto.targetToken) trackPupils(otto, otto.targetToken.x+otto.targetToken.r, otto.targetToken.y+otto.targetToken.r);
           // Excited eyebrows
-          var browL = ottoEl.querySelector('.otto-brow-left');
-          var browR = ottoEl.querySelector('.otto-brow-right');
-          if(browL){browL.setAttribute('y1','55');browL.setAttribute('y2','62');}
-          if(browR){browR.setAttribute('y1','62');browR.setAttribute('y2','55');}
+          if(otto.browL){otto.browL.setAttribute('y1','55');otto.browL.setAttribute('y2','62');}
+          if(otto.browR){otto.browR.setAttribute('y1','62');otto.browR.setAttribute('y2','55');}
           if (otto.stateTimer > 10) {
             otto.state = 'swimming';
             otto.stateTimer = 0;
@@ -2889,8 +2884,8 @@
               ottoEl.classList.add('swimming');
             }
             // Rotate tentacle group to trail behind
-            var tentGrp = ottoEl.querySelector('.otto-tentacles');
-            if(tentGrp && !isFast) {
+            if(otto.tentGrp && !isFast) {
+              var tentGrp = otto.tentGrp;
               var trailAngle = angleDeg * 0.4;
               tentGrp.style.transform = 'rotate('+(-trailAngle*0.3)+'deg) scaleX('+(1-Math.abs(Math.sin(angle))*0.15)+')';
             }
@@ -2919,7 +2914,7 @@
               otto.tokensEaten++;
               otto.growthScale = Math.min(1.8, otto.growthScale + 0.06);
               // BIG cartoon gulp squash with anime.js
-              ottoEl.classList.remove('swimming','scooting');var tg=ottoEl.querySelector('.otto-tentacles');if(tg)tg.style.transform='';
+              ottoEl.classList.remove('swimming','scooting');if(otto.tentGrp)otto.tentGrp.style.transform='';
               ottoEl.classList.add('gulping');
               if(typeof anime!=='undefined') anime({targets:ottoEl,scaleX:[1,1.4,0.7,1.15,0.9,1.03,1],scaleY:[1,0.6,1.4,0.85,1.1,0.97,1],duration:600,easing:'easeOutElastic(1,.5)'});
               setMouth(otto, 'open');
@@ -2933,7 +2928,7 @@
             otto.state = 'idle'; otto.stateTimer = 0;
             otto.swimVx = 0; otto.swimVy = 0;
             ottoEl.style.transform = '';
-            ottoEl.classList.remove('swimming','scooting');var tg=ottoEl.querySelector('.otto-tentacles');if(tg)tg.style.transform='';
+            ottoEl.classList.remove('swimming','scooting');if(otto.tentGrp)otto.tentGrp.style.transform='';
           }
 
         } else if (otto.state === 'gulping') {
@@ -2972,9 +2967,8 @@
             ottoEl.classList.remove('satisfied');
             setMouth(otto, 'neutral');
             // Reset brows
-            var bL=ottoEl.querySelector('.otto-brow-left'),bR=ottoEl.querySelector('.otto-brow-right');
-            if(bL){bL.setAttribute('y1','62');bL.setAttribute('y2','64');}
-            if(bR){bR.setAttribute('y1','64');bR.setAttribute('y2','62');}
+            if(otto.browL){otto.browL.setAttribute('y1','62');otto.browL.setAttribute('y2','64');}
+            if(otto.browR){otto.browR.setAttribute('y1','64');otto.browR.setAttribute('y2','62');}
           }
         }
 
@@ -3008,8 +3002,7 @@
           otto.targetToken = null;
           ottoEl.style.transform = '';
           ottoEl.classList.remove('swimming','spotted','gulping','satisfied','scooting');
-          var tgr = ottoEl.querySelector('.otto-tentacles');
-          if (tgr) tgr.style.transform = '';
+          if (otto.tentGrp) otto.tentGrp.style.transform = '';
           setMouth(otto, 'neutral');
         }
         if (otto.state === 'gulping' && otto.stateTimer > 60) {
@@ -3038,15 +3031,14 @@
         ottoEl.style.top = (otto.y - otto.h * 0.5) + 'px';
 
         // ── Token counter badge ──
-        var badge = ottoEl.querySelector('.otto-badge');
         if (otto.tokensEaten > 0) {
-          if (!badge) {
-            badge = document.createElement('div');
-            badge.className = 'otto-badge';
-            badge.style.cssText = 'position:absolute;top:-2px;right:-2px;background:rgba(255,200,50,0.85);color:#1a1a1a;font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;font-family:monospace;z-index:5;pointer-events:none';
-            ottoEl.appendChild(badge);
+          if (!otto.badgeEl) {
+            otto.badgeEl = document.createElement('div');
+            otto.badgeEl.className = 'otto-badge';
+            otto.badgeEl.style.cssText = 'position:absolute;top:-2px;right:-2px;background:rgba(255,200,50,0.85);color:#1a1a1a;font-size:8px;font-weight:700;padding:1px 4px;border-radius:8px;font-family:monospace;z-index:5;pointer-events:none';
+            ottoEl.appendChild(otto.badgeEl);
           }
-          badge.textContent = otto.tokensEaten;
+          otto.badgeEl.textContent = otto.tokensEaten;
         }
 
         // ── Sparkle canvas overlay ──
@@ -3072,39 +3064,30 @@
 
     // ── Pupil tracking (logo-style dark eye sockets) ──
     function trackPupils(otto, targetX, targetY) {
-      var svg = otto.el.querySelector('.otto-svg');
-      if (!svg) return;
+      if (!otto.irisL) return;
       var dx = targetX - otto.x;
       var dy = targetY - otto.y;
       var maxOff = 4;
       var dist = Math.sqrt(dx*dx + dy*dy) || 1;
       var ox = (dx/dist) * Math.min(maxOff, dist * 0.015);
       var oy = (dy/dist) * Math.min(maxOff, dist * 0.015);
-      // Dizzy eyes spin in circles
       if (otto.dizzyTimer > 0) {
         var dAngle = otto.dizzyTimer * 0.3;
         ox = Math.cos(dAngle) * 3;
         oy = Math.sin(dAngle) * 3;
       }
-      // Move inner eye highlights + iris
-      // Octopus eyes on sides of head
-      ['iris-left','iris-right'].forEach(function(cls) {
-        var el = svg.querySelector('.otto-' + cls);
-        if (el) {
-          var baseCx = cls.includes('left') ? 69 : 163;
-          el.setAttribute('cx', baseCx + ox);
-          el.setAttribute('cy', 78 + oy);
-        }
-      });
-      var eyeL = svg.querySelector('.otto-eye-left');
-      var eyeR = svg.querySelector('.otto-eye-right');
-      if (eyeL) { eyeL.setAttribute('cx', 69 + ox * 0.3); eyeL.setAttribute('cy', 77 + oy * 0.3); }
-      if (eyeR) { eyeR.setAttribute('cx', 163 + ox * 0.3); eyeR.setAttribute('cy', 77 + oy * 0.3); }
+      // Use cached refs — zero querySelector calls
+      otto.irisL.setAttribute('cx', 69 + ox);
+      otto.irisL.setAttribute('cy', 78 + oy);
+      otto.irisR.setAttribute('cx', 163 + ox);
+      otto.irisR.setAttribute('cy', 78 + oy);
+      if (otto.eyeL) { otto.eyeL.setAttribute('cx', 69 + ox * 0.3); otto.eyeL.setAttribute('cy', 77 + oy * 0.3); }
+      if (otto.eyeR) { otto.eyeR.setAttribute('cx', 163 + ox * 0.3); otto.eyeR.setAttribute('cy', 77 + oy * 0.3); }
     }
 
     // ── Mouth expression changes (logo coordinates) ──
     function setMouth(otto, expr) {
-      var mouth = otto.el.querySelector('.otto-mouth');
+      var mouth = otto.mouthEl;
       if (!mouth) return;
       var paths = {
         neutral: 'M106,95 Q116,103 126,95',
@@ -3122,19 +3105,17 @@
       };
       mouth.setAttribute('d', paths[expr] || paths.neutral);
       // Tongue element
-      var tongue = otto.el.querySelector('.otto-tongue');
       if (expr === 'tongue' || expr === 'raspberry') {
-        if (!tongue) {
-          tongue = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-          tongue.classList.add('otto-tongue');
-          tongue.setAttribute('rx','5');tongue.setAttribute('ry','7');
-          tongue.setAttribute('fill','#f87171');tongue.setAttribute('opacity','0.8');
-          var mEl = mouth.parentNode;
-          if(mEl) mEl.insertBefore(tongue, mouth.nextSibling);
+        if (!otto.tongueEl) {
+          otto.tongueEl = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+          otto.tongueEl.classList.add('otto-tongue');
+          otto.tongueEl.setAttribute('rx','5');otto.tongueEl.setAttribute('ry','7');
+          otto.tongueEl.setAttribute('fill','#f87171');otto.tongueEl.setAttribute('opacity','0.8');
+          if(mouth.parentNode) mouth.parentNode.insertBefore(otto.tongueEl, mouth.nextSibling);
         }
-        tongue.setAttribute('cx','116');tongue.setAttribute('cy', expr==='raspberry'?'108':'106');
-        tongue.style.display='';
-      } else if (tongue) { tongue.style.display='none'; }
+        otto.tongueEl.setAttribute('cx','116');otto.tongueEl.setAttribute('cy', expr==='raspberry'?'108':'106');
+        otto.tongueEl.style.display='';
+      } else if (otto.tongueEl) { otto.tongueEl.style.display='none'; }
       // Open mouth gets a fill for the gulp effect
       if (expr === 'open' || expr === 'ohface') {
         mouth.setAttribute('fill', 'rgba(0,0,0,0.3)');
@@ -3145,7 +3126,7 @@
 
     // ── Wink one eye (character charm) ──
     function winkEye(otto, side) {
-      var eye = otto.el.querySelector(side==='left'?'.otto-eye-left':'.otto-eye-right');
+      var eye = side==='left' ? otto.eyeL : otto.eyeR;
       if (!eye) return;
       var origRy = eye.getAttribute('ry');
       if(typeof anime!=='undefined'){
@@ -3229,8 +3210,7 @@
       if (_funnyActive && frame - _funnyActiveSince > 180) {
         _funnyActive = false;
         setMouth(otto, 'neutral');
-        var t = otto.el.querySelector('.otto-tongue');
-        if(t) t.style.display='none';
+        if(otto.tongueEl) otto.tongueEl.style.display='none';
       }
       if (_funnyActive) return;
       _funnyTimer++;
@@ -3620,13 +3600,22 @@
       fill.style.width=pct+'%';
     }
 
+    var _opacityDebounce=null;
     function adjustOpacity(delta){
       const raw=Math.round(appOpacity*100)+delta;
       const val=Math.max(20,Math.min(100,raw));
       appOpacity=val/100;
-      document.getElementById('opacity-val').textContent=val+'%';
+      var valEl=document.getElementById('opacity-val');
+      if(valEl) valEl.textContent=val+'%';
       renderScale('opacity-scale',Math.round((val-20)/8),10);
-      if(typeof dock!=='undefined')dock.setOpacity(appOpacity);
+      // Debounce + pause animations during opacity change to prevent GPU freeze
+      clearTimeout(_opacityDebounce);
+      document.documentElement.style.setProperty('--anim-state','paused');
+      _opacityDebounce=setTimeout(function(){
+        if(typeof dock!=='undefined')dock.setOpacity(appOpacity);
+        // Resume animations after opacity settles
+        setTimeout(function(){document.documentElement.style.setProperty('--anim-state','running');},100);
+      },80);
     }
 
     function toggleShimmerBtn(){
