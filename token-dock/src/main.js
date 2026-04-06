@@ -69,9 +69,19 @@ const defaults = {
   premiumUnlocked: false,
 };
 
+const VALID_THEMES = ['midnight','cobalt','slate','amethyst','carbon','galaxy','claude','hearts','catppuccin','dracula','tokyonight','rosepine','synthwave','nord','gruvbox','solarized','onedark','monokai'];
+
 function loadConfig() {
-  try { return { ...defaults, ...JSON.parse(fs.readFileSync(configPath, 'utf-8')) }; }
-  catch { return { ...defaults }; }
+  try {
+    const saved = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const merged = { ...defaults, ...saved };
+    // Validate theme — if stored theme is invalid/old, reset to default
+    if (!VALID_THEMES.includes(merged.theme)) {
+      console.log('[CONFIG] Invalid theme "' + merged.theme + '" — resetting to galaxy');
+      merged.theme = defaults.theme;
+    }
+    return merged;
+  } catch { return { ...defaults }; }
 }
 function saveConfig(cfg) {
   try { fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2)); }
