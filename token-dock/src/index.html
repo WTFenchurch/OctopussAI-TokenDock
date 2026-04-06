@@ -3491,6 +3491,15 @@
           countdownHTML+='<div class="economy-guard" style="margin-top:0.3em"><span class="eg-icon">\u{1f6e1}</span> <strong>'+SPEED_TIERS[activeTier].label+' Mode</strong> — Paid tokens blocked. Only free/local providers active.</div>';
         }
 
+        // Claude Code session burn indicator — ALWAYS visible when on Economy
+        if(activeTier==='economy'||activeTier==='standard'){
+          countdownHTML+='<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:0.3em;padding:0.25em 0.5em;margin-top:0.3em;font-size:0.55em;display:flex;align-items:center;gap:0.4em">';
+          countdownHTML+='<span style="color:var(--red);font-size:1.2em">\u{1f525}</span>';
+          countdownHTML+='<span style="color:var(--red);font-weight:700">CLAUDE CODE SESSION</span>';
+          countdownHTML+='<span style="color:var(--tm)">\u2014 This CLI burns paid Claude tokens. All other routing is free.</span>';
+          countdownHTML+='</div>';
+        }
+
         // Paid alerts
         var activeAlerts=paidAlerts.filter(function(a){return!a.dismissed;});
         var alertsHTML='';
