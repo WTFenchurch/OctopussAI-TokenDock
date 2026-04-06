@@ -18,7 +18,7 @@
   "build": {
     "appId": "com.octopusai.tokendock",
     "productName": "Token Dock",
-    "copyright": "Copyright 2026 WTFenchurchIII / Octopus AI",
+    "copyright": "Copyright 2026 Octopus AI™. All rights reserved.",
     "directories": {
       "output": "dist"
     },
