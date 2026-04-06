@@ -3772,6 +3772,13 @@
               if (bBtn2) bBtn2.classList.remove('active');
             }
           },
+          'openUrl':function(){
+            var url=el.dataset.url;
+            if(url&&typeof dock!=='undefined'&&dock.openExternal) dock.openExternal(url);
+          },
+          'openOllama':function(){
+            if(typeof dock!=='undefined'&&dock.openExternal) dock.openExternal('https://ollama.com/download');
+          },
           'openDonate':function(){
             if(typeof dock!=='undefined'&&dock.openExternal) dock.openExternal('https://wtfenchurch.github.io/octopuss-ai/#support');
           },
@@ -4336,12 +4343,12 @@
     }
     // ── Settings / Wizard ──
     const KEY_FIELDS = [
-      { key:'GROQ_API_KEY', label:'Groq', hint:'console.groq.com/keys', prefix:'gsk_' },
-      { key:'GEMINI_API_KEY', label:'Google Gemini', hint:'aistudio.google.com/apikey', prefix:'AIza' },
-      { key:'OPENROUTER_API_KEY', label:'OpenRouter', hint:'openrouter.ai/keys', prefix:'sk-or-v1-' },
-      { key:'HUGGINGFACE_API_KEY', label:'Hugging Face', hint:'huggingface.co/settings/tokens', prefix:'hf_' },
-      { key:'MISTRAL_API_KEY', label:'Mistral', hint:'console.mistral.ai/api-keys', prefix:'' },
-      { key:'OLLAMA_API_BASE', label:'Ollama URL', hint:'Default: http://localhost:11434', prefix:'http' },
+      { key:'GROQ_API_KEY', label:'Groq', hint:'<a href="#" data-action="openUrl" data-url="https://console.groq.com/keys" style="color:var(--accent)">Get free key → console.groq.com/keys</a> · 14,400 req/day', prefix:'gsk_' },
+      { key:'GEMINI_API_KEY', label:'Google Gemini', hint:'<a href="#" data-action="openUrl" data-url="https://aistudio.google.com/apikey" style="color:var(--accent)">Get free key → aistudio.google.com</a> · 1,500 req/day', prefix:'AIza' },
+      { key:'OPENROUTER_API_KEY', label:'OpenRouter', hint:'<a href="#" data-action="openUrl" data-url="https://openrouter.ai/keys" style="color:var(--accent)">Get free key → openrouter.ai/keys</a> · Free $0 models', prefix:'sk-or-v1-' },
+      { key:'HUGGINGFACE_API_KEY', label:'Hugging Face', hint:'<a href="#" data-action="openUrl" data-url="https://huggingface.co/settings/tokens" style="color:var(--accent)">Get free token → huggingface.co</a> · Rolling limits', prefix:'hf_' },
+      { key:'MISTRAL_API_KEY', label:'Mistral', hint:'<a href="#" data-action="openUrl" data-url="https://console.mistral.ai/api-keys" style="color:var(--accent)">Get free key → console.mistral.ai</a> · Experimental tier', prefix:'' },
+      { key:'OLLAMA_API_BASE', label:'Ollama URL', hint:'<a href="#" data-action="openUrl" data-url="https://ollama.com/download" style="color:var(--accent)">Download Ollama</a> · Local, free, unlimited · Default: http://localhost:11434', prefix:'http' },
     ];
     let settingsOpen = false;
     let flipping = false;
@@ -4483,9 +4490,18 @@
 
       body.innerHTML = `
         ${isWizard ? `
-          <div class="wizard-step">Step 1 of 1 — Enter your free tier API keys</div>
-          <div style="font-size:0.75em;color:var(--tm);margin-bottom:0.3em">
-            Sign up for free at each provider (~10 min total), paste keys below.
+          <div style="text-align:center;margin-bottom:0.5em">
+            <div style="font-size:1.1em;font-weight:700;color:var(--text)">Welcome to Token Dock</div>
+            <div style="font-size:0.65em;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin:0.2em 0">Nine Brains. One Mission.</div>
+            <div style="font-size:0.7em;color:var(--tm);margin-top:0.3em">Let's connect your free AI providers. Takes ~5 minutes.</div>
+          </div>
+          <div style="font-size:0.6em;color:var(--td);margin-bottom:0.4em">
+            <strong style="color:var(--green)">Step 1:</strong> Get free API keys from the providers below (click links to sign up)<br>
+            <strong style="color:var(--green)">Step 2:</strong> Paste each key in the field next to the provider<br>
+            <strong style="color:var(--green)">Step 3:</strong> Click Save — Token Dock validates and connects automatically
+          </div>
+          <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:0.3em;padding:0.3em 0.4em;font-size:0.6em;color:var(--green);margin-bottom:0.4em">
+            💡 <strong>Ollama</strong> runs locally — no API key needed. <a href="#" data-action="openOllama" style="color:var(--accent);text-decoration:underline">Install Ollama →</a>
           </div>
         ` : `
           <div style="font-size:0.75em;color:var(--tm)">${filledCount}/${KEY_FIELDS.length} providers configured</div>
@@ -4539,6 +4555,23 @@
           <button class="settings-btn secondary" data-action="toggleSettings" style="flex:0.6">Cancel</button>
         </div>
         <span class="key-saved" id="key-saved">Saved!</span>
+
+        ${isWizard ? `
+          <div class="settings-divider"></div>
+          <div style="font-size:0.65em;color:var(--tm);margin-bottom:0.3em">
+            <strong>What happens next:</strong>
+          </div>
+          <div style="font-size:0.6em;color:var(--td);line-height:1.6">
+            ✅ Token Dock monitors all your providers in real-time<br>
+            ✅ Green dots = online, red dots = offline or no key<br>
+            ✅ Gauges track tokens per task tier (Simple/Medium/Complex/Code)<br>
+            ✅ Savings calculator shows how much free routing saves you<br>
+            ✅ Otto celebrates when tokens flow 🐙
+          </div>
+          <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:0.3em;padding:0.3em 0.4em;font-size:0.6em;color:var(--accent);margin-top:0.4em">
+            🔧 <strong>Using Claude Code?</strong> Token Dock auto-tracks usage via localhost:4444. No extra config needed.
+          </div>
+        ` : ''}
       `;
 
       // Update dots on input
