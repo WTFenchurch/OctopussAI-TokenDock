@@ -1089,7 +1089,7 @@
     .footer{border-top:1px solid var(--border);padding:0.3em 0.6em;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;font-size:0.65em;color:var(--td);position:relative;z-index:1}
     .fs{display:flex;align-items:center;gap:0.3em}
     .pulse{width:1.05em;height:1.05em;border-radius:50%;background:var(--green);border:2px solid var(--green);box-shadow:0 0 4px 1px var(--green),0 0 10px 3px rgba(34,197,94,0.4),0 0 20px 6px rgba(34,197,94,0.15);animation:dotPulse 2s ease-in-out infinite}
-    @keyframes p{0%,100%{filter:brightness(1)}50%{filter:brightness(0.5)}}
+    /* @keyframes p — removed: unused dead animation */
     @keyframes dotPulse{0%,100%{filter:brightness(1);transform:scale(1)}50%{filter:brightness(1.4);transform:scale(1.15)}}
 
     .fill-green{background:var(--green)}.fill-yellow{background:var(--yellow)}.fill-red{background:var(--red)}.fill-accent{background:var(--accent)}
@@ -4257,7 +4257,7 @@
       }
     }
 
-    function tog(el){const b=el.nextElementSibling;if(!b)return;if(b.style.maxHeight==='0px'){b.style.maxHeight='2000px';el.querySelector('.ci').innerHTML='&#9660;';}else{b.style.maxHeight='0px';el.querySelector('.ci').innerHTML='&#9654;';}}
+    // function tog() — removed: replaced by togSection action handler
 
     if(typeof dock!=='undefined'&&dock.onDockState){
       dock.onDockState(s=>{
@@ -4550,11 +4550,7 @@
       });
     }
 
-    function toggleKeyVis(btn) {
-      const input = btn.parentElement.querySelector('input');
-      if (input.type === 'password') { input.type = 'text'; btn.innerHTML = '&#128064;'; }
-      else { input.type = 'password'; btn.innerHTML = '&#128065;'; }
-    }
+    // function toggleKeyVis() — removed: replaced by toggleKeyVis action handler
 
     function addCustomKey() {
       const container = document.getElementById('custom-keys-container');
