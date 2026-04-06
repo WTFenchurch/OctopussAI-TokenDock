@@ -3535,6 +3535,15 @@
         });
         pacingHTML+='</div>';
 
+        // Add calibrate button + file input to pacing section
+        pacingHTML+='<div style="margin-top:0.4em;display:flex;align-items:center;gap:0.5em">';
+        pacingHTML+='<input type="file" id="calibrate-file" accept="image/*" style="display:none" data-action="calibrateFile">';
+        pacingHTML+='<button class="tbtn" style="font-size:0.6em;width:auto;height:auto;padding:3px 8px" data-action="calibrateBtn">📸 Calibrate</button>';
+        pacingHTML+='<span style="font-size:0.5em;color:var(--td)">Upload provider usage screenshot for accurate tracking</span>';
+        pacingHTML+='</div>';
+        pacingHTML+='<div style="font-size:0.45em;color:var(--td);margin-top:0.2em;opacity:0.7">💡 More screenshots over time = higher accuracy. Each one teaches the system your usage pattern.</div>';
+        pacingHTML+='<div id="calibrate-status" style="font-size:0.5em;color:var(--green);margin-top:0.2em;display:none"></div>';
+
         var renderVars={gaugesHTML:gaugesHTML,countdownHTML:countdownHTML+alertsHTML,pacingHTML:pacingHTML};
 
         sectionOrder.forEach(function(id){
@@ -3774,6 +3783,13 @@
               var bBtn2 = document.querySelector('[data-action="ottoBounce"]');
               if (bBtn2) bBtn2.classList.remove('active');
             }
+          },
+          'calibrateBtn':function(){
+            var fileInput=document.getElementById('calibrate-file');
+            if(fileInput) fileInput.click();
+          },
+          'calibrateFile':function(){
+            // Handled by change listener below
           },
           'openUrl':function(){
             var url=el.dataset.url;
@@ -4312,6 +4328,30 @@
           }
           render(); // re-render with restored order
         }
+
+        // Calibrate file input listener
+        document.addEventListener('change',async function(e){
+          if(e.target&&e.target.id==='calibrate-file'&&e.target.files&&e.target.files[0]){
+            var file=e.target.files[0];
+            var status=document.getElementById('calibrate-status');
+            if(status){status.style.display='block';status.textContent='📸 Processing screenshot...';}
+            try{
+              var result=await dock.calibrateFromScreenshot(file.path);
+              if(result&&result.success){
+                var msg='✅ Calibrated! Found '+result.percentages.length+' usage readings.';
+                if(result.raw.claudeWeekly!==undefined) msg+=' Claude: '+result.raw.claudeWeekly+'%';
+                if(status){status.textContent=msg;status.style.color='var(--green)';}
+                await loadPaidUsage();
+                render();
+              } else {
+                if(status){status.textContent='⚠️ '+(result.error||'Could not parse screenshot');status.style.color='var(--yellow)';}
+              }
+            }catch(err){
+              if(status){status.textContent='❌ '+err.message;status.style.color='var(--red)';}
+            }
+            e.target.value=''; // reset for next upload
+          }
+        });
 
         // Live budget updates from token router + file watcher
         if(typeof dock!=='undefined'&&dock.onBudgetUpdated){

@@ -698,6 +698,104 @@ ipcMain.handle('get-env', () => {
     return env;
   } catch { return {}; }
 });
+// ── Calibration System: Screenshot OCR → real usage data ──
+const { createWorker } = require('tesseract.js');
+const calibrationDir = path.join(dataDir, 'calibrations');
+
+// Ensure calibration archive directory exists
+try { fs.mkdirSync(calibrationDir, { recursive: true }); } catch {}
+
+ipcMain.handle('calibrate-from-screenshot', async (_, imagePath) => {
+  try {
+    // 1. Save screenshot to calibration archive with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const archivePath = path.join(calibrationDir, 'calibration-' + timestamp + '.png');
+    fs.copyFileSync(imagePath, archivePath);
+
+    // 2. OCR the screenshot
+    const worker = await createWorker('eng');
+    const { data: { text } } = await worker.recognize(imagePath);
+    await worker.terminate();
+
+    console.log('[CALIBRATE] OCR text:', text.substring(0, 500));
+
+    // 3. Parse percentages from OCR text
+    // Looking for patterns like: "50% used", "3% used", "2% used"
+    // Also: "Resets in 4 hr 20 min", "Resets Sat 5:59 AM"
+    const percentages = [];
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const match = line.match(/(\d+)%\s*used/i);
+      if (match) {
+        percentages.push({
+          value: parseInt(match[1]),
+          context: line.trim()
+        });
+      }
+    }
+
+    // 4. Map parsed percentages to subscriptions
+    // Claude usage page typically shows: Current session %, Weekly all models %, Sonnet only %
+    const result = {
+      timestamp: new Date().toISOString(),
+      screenshotPath: archivePath,
+      ocrText: text,
+      parsed: percentages,
+      raw: {}
+    };
+
+    // Try to map to known subs based on context
+    for (const p of percentages) {
+      const ctx = p.context.toLowerCase();
+      if (ctx.includes('current session') || ctx.includes('session')) {
+        result.raw.claudeSession = p.value;
+      } else if (ctx.includes('all models') || ctx.includes('weekly')) {
+        result.raw.claudeWeekly = p.value;
+      } else if (ctx.includes('sonnet')) {
+        result.raw.claudeSonnet = p.value;
+      } else if (ctx.includes('gpt') || ctx.includes('chatgpt')) {
+        result.raw.chatgpt = p.value;
+      } else if (ctx.includes('copilot')) {
+        result.raw.copilot = p.value;
+      } else if (ctx.includes('grok')) {
+        result.raw.grok = p.value;
+      } else if (ctx.includes('gemini')) {
+        result.raw.gemini = p.value;
+      }
+    }
+
+    // 5. Update paid usage if we got Claude data
+    if (result.raw.claudeWeekly !== undefined) {
+      try {
+        const paid = JSON.parse(fs.readFileSync(paidUsagePath, 'utf-8'));
+        const claudeSub = paid.subscriptions && paid.subscriptions['Claude Max'];
+        if (claudeSub) {
+          // Convert percentage to tokens: 50% of 5M = 2.5M
+          claudeSub.used = Math.round(5000000 * (result.raw.claudeWeekly / 100));
+          paid.date = new Date().toISOString().slice(0, 10);
+          fs.writeFileSync(paidUsagePath, JSON.stringify(paid, null, 2));
+          console.log('[CALIBRATE] Claude Max updated: ' + result.raw.claudeWeekly + '% → ' + claudeSub.used + ' tokens');
+        }
+      } catch (e) { console.warn('[CALIBRATE] Paid usage update failed:', e.message); }
+    }
+
+    // 6. Save calibration log for pattern learning
+    const logPath = path.join(calibrationDir, 'calibration-log.jsonl');
+    fs.appendFileSync(logPath, JSON.stringify(result) + '\n');
+
+    console.log('[CALIBRATE] Saved to ' + archivePath + ', parsed ' + percentages.length + ' percentages');
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('budget-updated');
+    }
+
+    return { success: true, percentages: percentages, raw: result.raw, screenshotSaved: archivePath };
+  } catch (e) {
+    console.error('[CALIBRATE] Error:', e.message);
+    return { success: false, error: e.message };
+  }
+});
+
 // ── Live Provider Health Checks ──
 const https = require('https');
 
