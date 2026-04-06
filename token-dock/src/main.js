@@ -61,7 +61,7 @@ const defaults = {
   dockHeight: 800,
   alwaysOnTop: true,
   minimizeSide: 'right',
-  theme: 'midnight',
+  theme: 'galaxy',
   autoHideSeconds: 0, // 0=never, 5, 10, 15
   premiumUnlocked: false,
 };

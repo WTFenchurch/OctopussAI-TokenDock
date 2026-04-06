@@ -29,8 +29,8 @@ Otto is a studio-quality animated octopus who lives in Token Dock. He swims thro
 - **NaN-safe** — all percentage and formatting functions guard against bad data
 
 ### 🎨 Themes
-- **7 free themes** — Midnight, Charcoal, Slate, Nord, Solarized, Gruvbox, Monokai
-- **7 premium themes** — Hearts, Catppuccin, Dracula, Tokyo Night, Rose Pine, Synthwave, Galaxy
+- **7 free themes** — Midnight, Cobalt, Slate, Amethyst, Carbon, Galaxy, Claude Code
+- **11 premium themes** — Hearts, Catppuccin, Dracula, Tokyo Night, Rose Pine, Synthwave, Nord, Gruvbox, Solarized, One Dark, Monokai
 - Each theme tints the entire app including Otto's underwater world
 
 ### ⚡ 3-Speed Tier System
@@ -85,7 +85,7 @@ Otto is a studio-quality animated octopus who lives in Token Dock. He swims thro
 
 ```bash
 # Clone
-git clone https://github.com/WTFenchurchIII/token-dock.git
+git clone https://github.com/WTFenchurch/OctopussAI-TokenDock.git
 cd token-dock
 
 # Install dependencies + create shortcuts
@@ -158,7 +158,7 @@ Token Dock
 
 ## Part of the Free Inference Stack
 
-Token Dock is the monitoring dashboard for the [Free Inference Stack](https://github.com/WTFenchurchIII) — a complete multi-provider setup that routes AI requests through free tiers first, with smart task classification and automatic fallback.
+Token Dock is the monitoring dashboard for the [Free Inference Stack](https://github.com/WTFenchurch) — a complete multi-provider setup that routes AI requests through free tiers first, with smart task classification and automatic fallback.
 
 ## License
 

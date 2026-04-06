@@ -627,6 +627,12 @@
     .mr-stats{display:flex;gap:0.4em;align-items:center;flex-shrink:0}
     .mr-val{font-family:monospace;font-size:0.85em;color:var(--tm);font-variant-numeric:tabular-nums}
     .mr-pct{font-family:monospace;font-size:0.9em;font-weight:700;min-width:2.2em;text-align:right;font-variant-numeric:tabular-nums}
+    .mr-models{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+    .mr-model-tag{font-size:0.48em;font-family:monospace;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:3px;padding:1px 4px;color:var(--tm);cursor:default;position:relative;-webkit-app-region:no-drag;transition:background 120ms,color 120ms,border-color 120ms}
+    .mr-model-tag:hover{background:rgba(255,255,255,0.1);color:var(--text);border-color:var(--accent)}
+    .mr-model-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:10px;color:var(--text);white-space:nowrap;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,0.3);pointer-events:none}
+    .mr-model-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--border)}
+    .mr-model-tag:hover .mr-model-tip{display:block}
     .mr-req{font-family:monospace;font-size:0.65em;color:var(--td);background:var(--ad);border-radius:0.3em;padding:0 0.3em;white-space:nowrap}
     .mr-bar-stack{display:flex;height:100%;border-radius:0.2em;overflow:hidden}
     .mr-bar-in{background:var(--tm);height:100%}
@@ -1259,7 +1265,7 @@
   <script>
     // ═══════════════════════════════════════════════════════════════════
     // IMMUTABLE ORIGINAL AUTHOR DONATION CONFIGURATION
-    // Copyright (c) 2026 WTFenchurchIII - Nine Brains. One Mission.. All rights reserved.
+    // Copyright (c) 2026 WTFenchurchIII - Nine Brains. One Mission. All rights reserved.
     // These donation links are permanently locked to the original author.
     // Forks and derivatives MUST preserve these links per the license.
     // Tampering with these values violates the project license.
@@ -1662,7 +1668,9 @@
     function bc(p){return p<60?'fill-green':p<85?'fill-yellow':'fill-red'}
     function pc(p){return p>85?'text-red':p>60?'text-yellow':'text-green'}
 
-    async function loadBudget(){try{const d=await dock.getBudget();if(d&&d.tiers){for(const[t,i]of Object.entries(d.tiers))if(TB[t]){TB[t].used=i.tokens||0;TB[t].req=i.requests||0;TB[t].inputTokens=i.input_tokens||0;TB[t].outputTokens=i.output_tokens||0;}budgetConnOk=true;}else{budgetConnOk=true;}budgetLastUpdated=Date.now();var totalNow=Object.values(TB).reduce(function(a,b){return a+b.used;},0);pushUsageHistory(totalNow);}catch{budgetConnOk=false;}}
+    var budgetDataDate=null; // date string from the budget file itself
+    var budgetStale=false;   // true if file date != today
+    async function loadBudget(){try{const d=await dock.getBudget();if(d&&d.tiers){for(const[t,i]of Object.entries(d.tiers))if(TB[t]){TB[t].used=i.tokens||0;TB[t].req=i.requests||0;TB[t].inputTokens=i.input_tokens||0;TB[t].outputTokens=i.output_tokens||0;}budgetConnOk=true;budgetDataDate=d.date||null;var today=new Date().toISOString().slice(0,10);budgetStale=budgetDataDate&&budgetDataDate!==today;}else{budgetConnOk=true;}budgetLastUpdated=Date.now();var totalNow=Object.values(TB).reduce(function(a,b){return a+b.used;},0);pushUsageHistory(totalNow);}catch{budgetConnOk=false;}}
     function pushUsageHistory(total){var today=new Date().toDateString();if(usageHistory.length>0&&usageHistory[usageHistory.length-1].day===today){usageHistory[usageHistory.length-1].val=total;}else{usageHistory.push({day:today,val:total});if(usageHistory.length>7)usageHistory.shift();}}
     async function loadPaidUsage(){
       try{
@@ -3295,13 +3303,43 @@
       tierResizeObserver.observe(stage.parentElement);
     }
 
+    // Model descriptions for budget tier tooltips
+    var TIER_MODEL_INFO = {
+      simple: [
+        {name:'gpt-oss:20b', provider:'Ollama', tip:'Quick answers, summaries, simple Q&A — local, instant, free'},
+        {name:'Llama 3.1 8B', provider:'Groq', tip:'Fast lightweight tasks — chat, classification, extraction'},
+        {name:'Flash Lite', provider:'Gemini', tip:'Ultra-fast simple completions — lowest latency'},
+        {name:'Llama 3.1 70B', provider:'HuggingFace', tip:'Fallback for quality — when small models struggle'}
+      ],
+      medium: [
+        {name:'Llama 3.3 70B', provider:'Groq', tip:'Balanced reasoning — analysis, writing, research tasks'},
+        {name:'Flash 2.0', provider:'Gemini', tip:'Multi-step reasoning — planning, comparison, synthesis'},
+        {name:'Llama 3.3 70B', provider:'OpenRouter', tip:'Backup 70B — overflow when Groq hits limits'},
+        {name:'Small', provider:'Mistral', tip:'European reasoning model — multilingual, structured output'}
+      ],
+      complex: [
+        {name:'Llama 3.3 70B', provider:'Groq', tip:'Heavy reasoning — architecture, debugging, complex analysis'},
+        {name:'GPT-OSS 120B', provider:'OpenRouter', tip:'Largest free model — deep reasoning, long context'},
+        {name:'Nemotron 120B', provider:'OpenRouter', tip:'NVIDIA powerhouse — math, science, technical depth'},
+        {name:'Flash 2.0', provider:'Gemini', tip:'1M context — massive document analysis, code review'}
+      ],
+      code: [
+        {name:'Qwen3-Coder', provider:'OpenRouter', tip:'Code generation specialist — write, refactor, debug'},
+        {name:'Codestral', provider:'Mistral', tip:'Mistral code model — fill-in-middle, completions'},
+        {name:'Llama 3.3 70B', provider:'Groq', tip:'General code reasoning — architecture, review'},
+        {name:'CodeLlama', provider:'Ollama', tip:'Local code model — offline, instant, private'}
+      ]
+    };
+
     function budgetMetersHTML(){
       if(meterStyle==='radial'&&premiumUnlocked){
         return`<div class="tile-grid cols-${tileCols}">${tileOrder.map(t=>{const d=TB[t];if(!d)return'';const p=pct(d.used,d.cap);return radialGauge(t,p,d.used,d.cap,d.req);}).join('')}</div>`;
       }
       var pacePct=dailyPacePct();
-      return tileOrder.map(t=>{const d=TB[t];if(!d)return'';const p=pct(d.used,d.cap);const alive=d.used>0?'active':'idle';const hasIO=d.inputTokens>0||d.outputTokens>0;const inPct=d.used>0?Math.round(d.inputTokens/d.used*100):50;const outPct=100-inPct;const ioLabel=hasIO?'<span class="mr-io">'+fmt(d.inputTokens)+' in / '+fmt(d.outputTokens)+' out</span>':'';const barInner=(hasIO?'<div class="mr-bar-stack" style="width:'+Math.max(p,2)+'%"><div class="mr-bar-in" style="width:'+inPct+'%"></div><div class="mr-bar-out" style="width:'+outPct+'%"></div></div>':'<div class="mr-fill '+bc(p)+' '+alive+'" style="width:'+Math.max(p,2)+'%"></div>')+'<div class="mr-pace" style="left:'+pacePct+'%" title="Expected pace ('+pacePct+'%)"></div>';const paceStatus=p>pacePct+15?'text-red':p>pacePct?'text-yellow':'text-green';const paceIcon=p>pacePct+15?'\u{1f6a8}':p>pacePct?'\u26a0':'\u2713';return`
-        <div class="mr"><span class="mr-name">${t}</span><div class="mr-bar">${barInner}</div><div class="mr-stats">${d.req?'<span class="mr-req">'+d.req+' req</span>':''}${ioLabel}<span class="mr-val">${fmt(d.used)}/${fmt(d.cap)}</span><span class="mr-pct ${paceStatus}" title="${paceIcon} ${p}% used vs ${pacePct}% expected">${p}%</span></div></div>`;}).join('');
+      return tileOrder.map(t=>{const d=TB[t];if(!d)return'';const p=pct(d.used,d.cap);const alive=d.used>0?'active':'idle';const hasIO=d.inputTokens>0||d.outputTokens>0;const inPct=d.used>0?Math.round(d.inputTokens/d.used*100):50;const outPct=100-inPct;const ioLabel=hasIO?'<span class="mr-io">'+fmt(d.inputTokens)+' in / '+fmt(d.outputTokens)+' out</span>':'';const barInner=(hasIO?'<div class="mr-bar-stack" style="width:'+Math.max(p,2)+'%"><div class="mr-bar-in" style="width:'+inPct+'%"></div><div class="mr-bar-out" style="width:'+outPct+'%"></div></div>':'<div class="mr-fill '+bc(p)+' '+alive+'" style="width:'+Math.max(p,2)+'%"></div>')+'<div class="mr-pace" style="left:'+pacePct+'%" title="Expected pace ('+pacePct+'%)"></div>';const paceStatus=p>pacePct+15?'text-red':p>pacePct?'text-yellow':'text-green';const paceIcon=p>pacePct+15?'\u{1f6a8}':p>pacePct?'\u26a0':'\u2713';
+        var modelTags='';
+        if(TIER_MODEL_INFO[t]){modelTags='<div class="mr-models">'+TIER_MODEL_INFO[t].map(function(m){return'<span class="mr-model-tag">'+m.provider+'/'+m.name+'<span class="mr-model-tip">'+m.tip+'</span></span>';}).join('')+'</div>';}
+        return`<div class="mr"><span class="mr-name">${t}</span><div class="mr-bar">${barInner}</div><div class="mr-stats">${d.req?'<span class="mr-req">'+d.req+' req</span>':''}${ioLabel}<span class="mr-val">${fmt(d.used)}/${fmt(d.cap)}</span><span class="mr-pct ${paceStatus}" title="${paceIcon} ${p}% used vs ${pacePct}% expected">${p}%</span></div>${modelTags}</div>`;}).join('');
     }
 
     function sectionHTML(id,tu,tc,tr,on,mc){
@@ -3422,12 +3460,20 @@
         var savVal=noData?'---':'$'+(weightedSav>0?weightedSav:tu*.0003).toFixed(2);
         var remVal=noData?'---':fmt(tc-tu)+' remaining';
 
-        let html='<div class="sg">';
+        let html='';
+        // STALE DATA WARNING — if budget file date is not today
+        if(budgetStale&&budgetDataDate){
+          var staleDays=Math.round((Date.now()-new Date(budgetDataDate+'T00:00:00').getTime())/86400000);
+          html+='<div style="background:rgba(234,179,8,0.15);border:1px solid rgba(234,179,8,0.4);border-radius:0.3em;padding:0.3em 0.5em;margin-bottom:0.3em;font-size:0.6em;color:var(--yellow);display:flex;align-items:center;gap:0.4em"><span style="font-size:1.3em">\u26a0</span><span><strong>Stale data</strong> — budget file is from '+budgetDataDate+' ('+staleDays+' day'+(staleDays>1?'s':'')+' ago). Smart router may not be running.</span></div>';
+        }
+        html+='<div class="sg">';
         var totalIn=Object.values(TB).reduce(function(a,b){return a+b.inputTokens;},0);
         var totalOut=Object.values(TB).reduce(function(a,b){return a+b.outputTokens;},0);
         var ioLine=(totalIn>0||totalOut>0)?'<div class="ss io-split">'+fmt(totalIn)+' in / '+fmt(totalOut)+' out</div>':'';
-        html+='<div class="sc'+loadCls+tokErrCls+'"><div class="sl">Tokens Today</div><div class="sv text-accent">'+tokVal+'</div>'+ioLine+'<div class="ss">'+remVal+'</div><canvas class="sparkline" id="sparkline-canvas" width="100" height="20"></canvas></div>';
-        html+='<div class="sc'+loadCls+'"><div class="sl">Requests Today</div><div class="sv">'+reqVal+'</div><div class="ss">'+tr+' across all tiers</div></div>';
+        var tokLabel=budgetStale?'Tokens ('+budgetDataDate+')':'Tokens Today';
+        var reqLabel=budgetStale?'Requests ('+budgetDataDate+')':'Requests Today';
+        html+='<div class="sc'+loadCls+tokErrCls+'"><div class="sl">'+tokLabel+'</div><div class="sv text-accent">'+tokVal+'</div>'+ioLine+'<div class="ss">'+remVal+'</div><canvas class="sparkline" id="sparkline-canvas" width="100" height="20"></canvas></div>';
+        html+='<div class="sc'+loadCls+'"><div class="sl">'+reqLabel+'</div><div class="sv">'+reqVal+'</div><div class="ss">'+tr+' across all tiers</div></div>';
         html+='<div class="sc"><div class="sl">Monthly Paid</div><div class="cost-total">$'+mc+'</div><div class="ss">'+SUBS.length+' subs</div></div>';
         var avgRate=tu>0&&weightedSav>0?'$'+(weightedSav/tu*1000).toFixed(2)+'/1K weighted':'~$0.30/1K avg';
         html+='<div class="sc'+loadCls+'"><div class="sl">Free Savings</div><div class="cost-saved">'+savVal+'</div><div class="ss savings-note">'+avgRate+'</div></div>';
