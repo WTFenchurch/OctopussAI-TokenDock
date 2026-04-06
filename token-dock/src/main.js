@@ -814,27 +814,111 @@ ipcMain.handle('get-keys', () => {
   } catch { return {}; }
 });
 
+// ── API Key Validation Rules ──
+const KEY_VALIDATORS = {
+  GROQ_API_KEY:        { prefix: 'gsk_',     minLen: 20, maxLen: 100, label: 'Groq' },
+  GEMINI_API_KEY:      { prefix: 'AIza',     minLen: 20, maxLen: 60,  label: 'Gemini' },
+  OPENROUTER_API_KEY:  { prefix: 'sk-or-v1-', minLen: 20, maxLen: 100, label: 'OpenRouter' },
+  HUGGINGFACE_API_KEY: { prefix: 'hf_',      minLen: 10, maxLen: 60,  label: 'HuggingFace' },
+  MISTRAL_API_KEY:     { prefix: '',          minLen: 20, maxLen: 60,  label: 'Mistral' },
+  OLLAMA_API_BASE:     { prefix: 'http',     minLen: 10, maxLen: 200, label: 'Ollama Base URL' },
+  LITELLM_MASTER_KEY:  { prefix: '',          minLen: 5,  maxLen: 100, label: 'LiteLLM Key' },
+  LITELLM_PORT:        { prefix: '',          minLen: 1,  maxLen: 6,   label: 'LiteLLM Port' },
+};
+
+function validateKey(name, value) {
+  if (!value || value.trim().length === 0) return { valid: true, empty: true };
+  value = value.trim();
+  const rule = KEY_VALIDATORS[name];
+  if (!rule) return { valid: true }; // unknown key — pass through
+
+  const errors = [];
+
+  // Length check
+  if (value.length < rule.minLen) errors.push(`${rule.label}: too short (min ${rule.minLen} chars)`);
+  if (value.length > rule.maxLen) errors.push(`${rule.label}: too long (max ${rule.maxLen} chars)`);
+
+  // Prefix check (skip if no prefix defined)
+  if (rule.prefix && !value.startsWith(rule.prefix)) {
+    errors.push(`${rule.label}: should start with "${rule.prefix}"`);
+  }
+
+  // Port-specific check
+  if (name === 'LITELLM_PORT') {
+    const port = parseInt(value);
+    if (isNaN(port) || port < 1 || port > 65535) errors.push('Port must be 1-65535');
+  }
+
+  // URL-specific check
+  if (name === 'OLLAMA_API_BASE') {
+    try { new URL(value); } catch { errors.push('Ollama: must be a valid URL'); }
+  }
+
+  // Dangerous character check (newlines, quotes could break .env format)
+  if (/[\n\r"'`$\\]/.test(value)) {
+    errors.push(`${rule.label}: contains invalid characters`);
+  }
+
+  return { valid: errors.length === 0, errors: errors, value: value };
+}
+
 ipcMain.handle('save-keys', (_, keys) => {
   try {
+    const validationErrors = [];
+    const cleanKeys = {};
+
+    // Validate every key
+    for (const [k, v] of Object.entries(keys)) {
+      const result = validateKey(k, v);
+      if (result.empty) {
+        cleanKeys[k] = ''; // empty is OK — means not configured
+      } else if (!result.valid) {
+        validationErrors.push(...result.errors);
+      } else {
+        cleanKeys[k] = (result.value || v).trim();
+      }
+    }
+
+    // If any validation errors, return them without saving
+    if (validationErrors.length > 0) {
+      console.warn('[KEY SAVE] Validation failed:', validationErrors);
+      return { success: false, errors: validationErrors };
+    }
+
+    // Write validated keys to .env
     let lines = [
       '# ============================================',
       '# Free Inference Stack — API Keys',
+      '# Validated by Token Dock on ' + new Date().toISOString().slice(0, 10),
       '# ============================================',
       '',
     ];
     const order = ['GROQ_API_KEY','GEMINI_API_KEY','OPENROUTER_API_KEY','HUGGINGFACE_API_KEY','MISTRAL_API_KEY','OLLAMA_API_BASE','LITELLM_MASTER_KEY','LITELLM_PORT'];
     for (const k of order) {
-      if (keys[k] !== undefined) lines.push(`${k}=${keys[k]}`);
+      if (cleanKeys[k] !== undefined) lines.push(`${k}=${cleanKeys[k]}`);
     }
-    // Any extra keys not in order
-    for (const [k, v] of Object.entries(keys)) {
+    for (const [k, v] of Object.entries(cleanKeys)) {
       if (!order.includes(k)) lines.push(`${k}=${v}`);
     }
     fs.writeFileSync(envPath, lines.join('\n') + '\n');
-    return true;
+
+    // Integrity check — re-read and verify
+    const written = fs.readFileSync(envPath, 'utf-8');
+    const verified = order.every(k => {
+      if (!cleanKeys[k]) return true;
+      return written.includes(`${k}=${cleanKeys[k]}`);
+    });
+
+    if (!verified) {
+      console.error('[KEY SAVE] Integrity check FAILED — file may be corrupted');
+      return { success: false, errors: ['Integrity check failed — please try again'] };
+    }
+
+    console.log('[KEY SAVE] Validated and saved ' + Object.keys(cleanKeys).filter(k => cleanKeys[k]).length + ' keys');
+    return { success: true, errors: [] };
   } catch (e) {
-    console.error('Save keys error:', e);
-    return false;
+    console.error('[KEY SAVE] Error:', e);
+    return { success: false, errors: [e.message] };
   }
 });
 

@@ -4589,8 +4589,18 @@
       keys.LITELLM_PORT = savedKeys.LITELLM_PORT || '4000';
 
       if (typeof dock !== 'undefined') {
-        const ok = await dock.saveKeys(keys);
-        if (ok) {
+        const result = await dock.saveKeys(keys);
+        if (result && result.success) {
+          const badge = document.getElementById('key-saved');
+          if (badge) { badge.textContent = '✅ Keys validated & saved'; badge.classList.add('show'); setTimeout(() => badge.classList.remove('show'), 3000); }
+          await checkProviders();
+          render();
+        } else if (result && result.errors && result.errors.length > 0) {
+          // Show validation errors
+          const badge = document.getElementById('key-saved');
+          if (badge) { badge.textContent = '⚠️ ' + result.errors[0]; badge.style.color = 'var(--yellow)'; badge.classList.add('show'); setTimeout(() => { badge.classList.remove('show'); badge.style.color = ''; }, 5000); }
+        } else if (result === true) {
+          // Legacy: old format returned boolean
           const badge = document.getElementById('key-saved');
           if (badge) { badge.classList.add('show'); setTimeout(() => badge.classList.remove('show'), 2000); }
           await checkProviders();
