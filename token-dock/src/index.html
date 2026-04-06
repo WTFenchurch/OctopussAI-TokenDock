@@ -481,7 +481,7 @@
     .hero-splash{text-align:center;padding:0.5em 0.5em 0.4em;position:relative;overflow:hidden}
     .hero-splash::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,var(--ad),transparent 70%);pointer-events:none}
     .hero-logo{width:64px;height:64px;margin:0 auto 0.2em;position:relative;cursor:pointer;-webkit-app-region:no-drag}
-    .hero-logo img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 8px rgba(147,51,234,0.5)) drop-shadow(0 0 20px rgba(147,51,234,0.25)) drop-shadow(0 2px 4px rgba(0,0,0,0.3));transition:filter 300ms ease}
+    .hero-logo img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 8px rgba(147,51,234,0.5)) drop-shadow(0 0 20px rgba(147,51,234,0.25)) drop-shadow(0 2px 4px rgba(0,0,0,0.3));transition:filter 300ms ease;mix-blend-mode:lighten}
     /* Star sparkle overlay */
     .hero-logo::before{content:'';position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,0.3) 0%,transparent 3%),radial-gradient(circle at 70% 20%,rgba(255,255,255,0.2) 0%,transparent 2%),radial-gradient(circle at 50% 70%,rgba(255,255,255,0.15) 0%,transparent 2.5%),radial-gradient(circle at 80% 60%,rgba(255,255,255,0.2) 0%,transparent 2%),radial-gradient(circle at 20% 55%,rgba(255,255,255,0.15) 0%,transparent 2%);animation:sparkleShift 3s ease-in-out infinite;pointer-events:none}
     @keyframes sparkleShift{0%,100%{opacity:0.6;rotate:0deg}50%{opacity:1;rotate:3deg}}
@@ -1119,7 +1119,7 @@
           <div class="theme-rain" id="theme-rain"></div>
           <div class="titlebar">
             <div class="tl">
-              <div class="tlogo" data-action="hideToTray" title="Hide to tray"><img src="baby-otto.png" alt="Octopus AI" style="width:100%;height:100%;object-fit:contain"/></div>
+              <div class="tlogo" data-action="hideToTray" title="Hide to tray"><img src="baby-otto.png" alt="Octopus AI" style="width:100%;height:100%;object-fit:contain;mix-blend-mode:lighten"/></div>
               <span class="ttitle">Token Dock</span>
               <div class="tp" id="tp"></div>
             </div>
