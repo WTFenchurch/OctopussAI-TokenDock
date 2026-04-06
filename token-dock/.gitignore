@@ -8,3 +8,4 @@ dist/
 *.bak
 .claude/
 icon-preview.html
+dist/

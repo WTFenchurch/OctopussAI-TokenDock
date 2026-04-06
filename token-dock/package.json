@@ -1,22 +1,67 @@
 {
   "name": "token-dock",
-  "version": "1.0.0",
-  "description": "Always-on-top desktop dock for monitoring AI token usage across free and paid tiers",
+  "version": "1.3.0",
+  "description": "Nine Brains. One Mission. — AI token command center",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
+    "dock": "electron .",
     "build-icon": "electron build-icon.js",
     "install-shortcuts": "node install.js",
-    "postinstall": "node install.js",
     "uninstall": "node uninstall.js",
-    "dock": "electron ."
+    "dist": "electron-builder",
+    "dist:win32": "electron-builder --win --ia32",
+    "dist:win64": "electron-builder --win --x64",
+    "dist:all": "electron-builder --win --ia32 --x64"
+  },
+  "build": {
+    "appId": "com.octopussai.tokendock",
+    "productName": "Token Dock",
+    "copyright": "Copyright 2026 WTFenchurchIII / Octopuss AI",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "icon.ico",
+      "icon.png",
+      "icon.svg",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "icon": "icon.ico",
+      "artifactName": "TokenDock-${version}-${arch}-Setup.exe",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Token Dock"
+    }
   },
   "keywords": ["ai", "tokens", "llm", "monitoring", "electron", "openrouter", "groq", "ollama", "litellm"],
   "author": "WTFenchurchIII",
   "license": "SEE LICENSE",
-  "dependencies": {},
   "devDependencies": {
-    "electron": "^33.0.0"
+    "electron": "^33.0.0",
+    "electron-builder": "^26.8.1"
   }
 }
