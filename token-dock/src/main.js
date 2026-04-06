@@ -451,9 +451,12 @@ function setTheme(theme) {
 }
 
 // ── IPC + TOKEN ROUTER ──
-const budgetPath = path.join(__dirname, '..', '..', '.token_budget.json');
-const envPath = path.join(__dirname, '..', '..', '.env');
-const paidUsagePath = path.join(__dirname, '..', '..', '.paid_usage.json');
+// Data paths — work in both dev (free-inference-stack/) and packaged (userData/)
+const isPackaged = app.isPackaged;
+const dataDir = isPackaged ? app.getPath('userData') : path.join(__dirname, '..', '..');
+const budgetPath = path.join(dataDir, '.token_budget.json');
+const envPath = isPackaged ? path.join(app.getPath('userData'), '.env') : path.join(__dirname, '..', '..', '.env');
+const paidUsagePath = path.join(dataDir, '.paid_usage.json');
 const http = require('http');
 
 // ── Budget Helper: read, auto-reset if stale, write ──
@@ -733,7 +736,7 @@ ipcMain.handle('set-speed-tier', (_, tier) => {
   // Write tier to a file the smart router can read
   try {
     fs.writeFileSync(
-      path.join(__dirname, '..', '..', '.speed_tier.json'),
+      path.join(dataDir, '.speed_tier.json'),
       JSON.stringify({ tier, timestamp: Date.now() })
     );
   } catch(e) { console.error('Speed tier write error:', e); }
