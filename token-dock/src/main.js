@@ -765,6 +765,8 @@ ipcMain.handle('set-ignore-mouse', (_, ignore, opts) => {
   if (mainWindow) mainWindow.setIgnoreMouseEvents(ignore, opts || {});
 });
 ipcMain.handle('get-premium', () => config.premiumUnlocked);
+ipcMain.handle('set-config', (_, key, val) => { config[key] = val; saveConfig(config); });
+ipcMain.handle('get-config', (_, key) => config[key]);
 ipcMain.handle('set-opacity', (_, val) => { if(mainWindow) mainWindow.setOpacity(val); });
 ipcMain.handle('set-premium', (_, val) => { config.premiumUnlocked = val; saveConfig(config); });
 ipcMain.handle('send-notification', (_, title, body) => {

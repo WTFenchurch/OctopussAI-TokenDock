@@ -33,5 +33,7 @@ contextBridge.exposeInMainWorld('dock', {
   onAutoHideWarning: (cb) => ipcRenderer.on('auto-hide-warning', cb),
   resetAutoHideTimer: () => ipcRenderer.invoke('reset-auto-hide-timer'),
   recordTokens: (tier, tokens, requests) => ipcRenderer.invoke('record-tokens', tier, tokens, requests),
+  setConfig: (key, val) => ipcRenderer.invoke('set-config', key, val),
+  getConfig: (key) => ipcRenderer.invoke('get-config', key),
   onBudgetUpdated: (cb) => ipcRenderer.on('budget-updated', cb),
 });
