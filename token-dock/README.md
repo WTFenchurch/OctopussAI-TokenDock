@@ -1,6 +1,6 @@
 # 🐙 Token Dock
 
-**Your AI token command center — a Pixar-quality desktop companion that monitors every free token, every paid dollar, and every provider in your inference stack.**
+**Your AI token command center — a studio-quality desktop companion that monitors every free token, every paid dollar, and every provider in your inference stack.**
 
 Token Dock is an always-on-top Electron dock that sits on your screen while you work. It gives you real-time visibility into your AI usage — which providers are online, how many tokens you've burned, what's left in your daily budget, and exactly how much money you're saving by routing through free tiers first.
 
@@ -11,10 +11,10 @@ Built by developers, for developers running multi-provider free inference stacks
 ## What Makes Token Dock Special
 
 ### 🐙 Otto — Your AI Companion
-Otto is a Pixar/DreamWorks-quality animated octopus who lives in Token Dock. He swims through an underwater world, chases and eats token coins, makes funny faces, winks at you, blows bubbles, and gets visited by sea creature friends. The more compute you use, the more active Otto becomes.
+Otto is a studio-quality animated octopus who lives in Token Dock. He swims through an underwater world, chases and eats token coins, makes funny faces, winks at you, blows bubbles, and gets visited by sea creature friends. The more compute you use, the more active Otto becomes.
 
 - **Real octopus anatomy** — bulbous mantle, side-mounted eyes with horizontal pupils, 8 tentacles from center beak
-- **Pixar-quality rendering** — 5-layer lighting (key, fill, rim, subsurface scattering, ambient occlusion), 3 catchlights per eye
+- **studio-quality rendering** — 5-layer lighting (key, fill, rim, subsurface scattering, ambient occlusion), 3 catchlights per eye
 - **12 personality actions** — wink, tongue, raspberry, hearts, curl/unfurl, bubbles, and more
 - **Jet propulsion swimming** — body pulses, tentacles trail behind, bubble jets
 - **Sea creature visitors** — clownfish, turtle, eel, jellyfish, seahorse, pufferfish swim by every 7 seconds

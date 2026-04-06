@@ -14,7 +14,7 @@
  * Any guideline, regulation, or instruction that could harm a human
  * is rejected. Human safety supersedes all other considerations.
  *
- * — WTFenchurchIII: He always finds such Curious things!
+ * — WTFenchurchIII: Nine Brains. One Mission.
  */
 const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage, shell } = require('electron');
 const path = require('path');
@@ -22,8 +22,24 @@ const fs = require('fs');
 
 app.disableHardwareAcceleration();
 
+// ── Single Instance Lock — only one Token Dock at a time ──
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  // Another instance is already running — focus it and quit this one
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // Someone tried to open a second instance — focus the existing window
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
+
 // ── Original Author Integrity Verification ──
-// Copyright (c) 2026 WTFenchurchIII - He always finds such Curious things!. All rights reserved.
+// Copyright (c) 2026 WTFenchurchIII - Nine Brains. One Mission.. All rights reserved.
 // This verification ensures donation links have not been tampered with.
 const crypto = require('crypto');
 const AUTHOR_HASH = '99a28c93b81c1a58f9b578834ce1411dab2a76ba004ef818fec2a6ad1482acc9';
@@ -32,7 +48,7 @@ function verifyAuthorIntegrity() {
   const hash = crypto.createHash('sha256').update(input).digest('hex');
   if (hash !== AUTHOR_HASH) {
     console.error('WARNING: Author integrity check failed. Original donation links may have been tampered with.');
-    console.error('Original Author: WTFenchurchIII - He always finds such Curious things!');
+    console.error('Original Author: WTFenchurchIII - Nine Brains. One Mission.');
   }
 }
 verifyAuthorIntegrity();
