@@ -75,6 +75,7 @@ function createWindow() {
   const x = config.dockPosition.x ?? sw - config.dockWidth - 8;
   const y = config.dockPosition.y ?? Math.round((sh - config.dockHeight) / 2);
 
+  const appIcon = getAppIcon();
   mainWindow = new BrowserWindow({
     width: config.dockWidth,
     height: config.dockHeight,
@@ -88,6 +89,7 @@ function createWindow() {
     alwaysOnTop: config.alwaysOnTop,
     skipTaskbar: false,
     hasShadow: false,
+    icon: appIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -328,10 +330,20 @@ function setAutoHide(seconds) {
 }
 
 // ── Tray ──
-function createTray() {
-  const icon = nativeImage.createFromDataURL(
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAOklEQVQ4T2NkYPj/n4EBBRgZGRkZGBgYmNAEUMWYGBgYGJmQNaMrIEozo4sBNTNhcwFRmokKBo8LAACq0BER9vIrHwAAAABJRU5ErkJggg=='
+function getAppIcon() {
+  // Try .ico first (for Windows shortcuts), fall back to generated
+  const icoPath = path.join(__dirname, '..', 'icon.ico');
+  const pngPath = path.join(__dirname, '..', 'icon.png');
+  if (fs.existsSync(icoPath)) return nativeImage.createFromPath(icoPath);
+  if (fs.existsSync(pngPath)) return nativeImage.createFromPath(pngPath);
+  // Fallback: 16x16 octopus data URL
+  return nativeImage.createFromDataURL(
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAKT0lEQVR4nK2XW3BU1RnHf2ufvc9uNpvNbrK5kEACIQRCCPcgIKIoKl7whuN0tI7j2GnHaX3w0r60M+1MO+OD7Yy1Y2eqjtVaxxtUFBRELoIIhEsSkkBCSEJCNrvJXs7lnO7DZoOJ2pnON3P27J7z/b//933fOWcF/4+IOLdx7pFLnGOQ3xbQXfKjCiFC+KXCWJb3F/qb4E3gAmGYnYLb97bnQNEd92FnkYoQC/xTvLbm9/SkAjd8L5r4gPrq9sAfqz6rXqP9tQX7pK6Bk4EqP4NXk/zj2cCXJd1NtEkMcnPeCgSqX9OCzwSeB14nqjPWEPVBgvdCZ3ILGWkrgJeLF5XH0BQ0Ql8sJjDsgqk8SdEJdH/KwG2nTiJW4E1wPvA44HHKENbXOqxe9NCAk+nfmhyQBjGJkAxL32JBn/Y3EzcSJ52FQ58SPLtyYEXG/1+v9rAOlRzDlmfRGdCJzl3p38CPPQPBVxP8vPyPxYx1H7e/cBIjvuQF2AwHgRuBBCOxbGSi6AFOxrADEPE4Lp5eUMQlZwmFJYf+u8bx7l+/QLww3eBx9E0dBHxKeBc4CfApUDaOcRwgOsWtnBRV2chjy8Bn1VEKNJsDJ4l1w7+WkMiD0NfBe4AHkTYJi3Q0JgxfkN7NVex3Q2SjIbYLhSJq2mFMxI/+hD/ZndLCqp1MZyQFrgTKAPuA6wAuuAjwBlITEnxZtL0HB4QifCLwPPA08DDwGlJt9s6r5M8VWKp/NUexLc25HA1eUOJJBwqA5LyJMJ8OiHNIUB7OwrMuEMnlIQDHIAcwBjuAnEPNlgWG3ZFjjqPJKKSvFYwP7/pXj/Mfp8aP0R8lYcPvEV+CWQB/EhngoTHDLvDgfPg+MpG5IFJkrWYW9S7NB5ooIy2+aIjgV5fzwGPCm+jvqOBTQbKR7/Bq+qOxXwB+B+xP/Ij4lFZ2Ly1p4PbFjZSHwonvhCAXiAPxACRq5eMC8FfJGKINTYvYhZcDVyEOaF9xdfYCiR53iYB94G+SqKvq16jMcJvH16l8UB+CTwiPy3KMJ3yHKq8DJiC/7PBzRj8IA4gE8AD+P5i2OFCCOxnEB2AFcGN3LJ0qH4m5r1LdQI6wBSqj3wIJAH8A/gD8M3ZMjIReIQ5AJvl0X/ISvITFY6UUfPxbdyy4lO+f1cHrewcIZfR8kS89CVwJfIb/L8H8nxeYD7wL3E/sP5kkNEPPWS+xWC/nWJTLl+6R1Yr4oA6y3qBLFIJXAm8YGcDCJa3Z9VFUydjOWl94NsPj9L+l5hV2VT5N0zzWXlYwEP5YM2NJIyTkK/xQr7Y2qLW2YZXoFVR4e5Dge5HLiI+FOoYFiCxORLjvCxFPlJMPJlScYNH/v0jff/8qVtPfsJJzqYm+GXkH+vAPLAacBr+QBegATK9bwDTQBWwBPg28CfCILMA+8E6H+LPJsj/E/8FHgn/nwGOY/IkI5IFyP8b+x26z3A3D8AAAAASUVORK5CYII='
   );
+}
+
+function createTray() {
+  const icon = getAppIcon();
   tray = new Tray(icon);
 
   const contextMenu = Menu.buildFromTemplate([
@@ -444,11 +456,32 @@ function pingUrl(url, headers, timeoutMs) {
   return new Promise((resolve) => {
     const mod = url.startsWith('https') ? https : http;
     const req = mod.get(url, { headers, timeout: timeoutMs }, (res) => {
-      res.resume(); // drain
+      res.resume();
       resolve(res.statusCode < 500);
     });
     req.on('error', () => resolve(false));
     req.on('timeout', () => { req.destroy(); resolve(false); });
+  });
+}
+
+// Enhanced probe: returns status + rate limit headers for quota tracking
+function probeProvider(url, headers, timeoutMs) {
+  return new Promise((resolve) => {
+    const mod = url.startsWith('https') ? https : http;
+    const req = mod.get(url, { headers, timeout: timeoutMs }, (res) => {
+      res.resume();
+      const h = res.headers;
+      resolve({
+        online: res.statusCode < 500,
+        status: res.statusCode,
+        remaining: parseInt(h['x-ratelimit-remaining'] || h['x-ratelimit-remaining-requests'] || h['ratelimit-remaining'] || '-1'),
+        limit: parseInt(h['x-ratelimit-limit'] || h['x-ratelimit-limit-requests'] || h['ratelimit-limit'] || '-1'),
+        resetAt: h['x-ratelimit-reset'] || h['ratelimit-reset'] || null,
+        retryAfter: parseInt(h['retry-after'] || '0'),
+      });
+    });
+    req.on('error', () => resolve({ online: false, status: 0, remaining: -1, limit: -1, resetAt: null, retryAfter: 0 }));
+    req.on('timeout', () => { req.destroy(); resolve({ online: false, status: 0, remaining: -1, limit: -1, resetAt: null, retryAfter: 0 }); });
   });
 }
 
@@ -472,35 +505,51 @@ ipcMain.handle('check-providers', async () => {
   const timeout = 5000;
   const results = {};
 
-  // Run all checks in parallel for speed
   const checks = [];
 
-  // Groq
+  // Groq — returns X-RateLimit-* headers
   if (env.GROQ_API_KEY && env.GROQ_API_KEY.length > 5) {
-    checks.push(pingUrl('https://api.groq.com/openai/v1/models', { 'Authorization': 'Bearer ' + env.GROQ_API_KEY }, timeout).then(ok => { results.groq = ok ? 'online' : 'offline'; }));
+    checks.push(probeProvider('https://api.groq.com/openai/v1/models', { 'Authorization': 'Bearer ' + env.GROQ_API_KEY }, timeout).then(r => {
+      results.groq = r.online ? 'online' : 'offline';
+      results.groq_quota = { remaining: r.remaining, limit: r.limit, resetAt: r.resetAt };
+    }));
   } else { results.groq = 'no-key'; }
 
   // Gemini
   if (env.GEMINI_API_KEY && env.GEMINI_API_KEY.length > 5) {
-    checks.push(pingUrl('https://generativelanguage.googleapis.com/v1beta/models?key=' + env.GEMINI_API_KEY, {}, timeout).then(ok => { results.gemini = ok ? 'online' : 'offline'; }));
+    checks.push(probeProvider('https://generativelanguage.googleapis.com/v1beta/models?key=' + env.GEMINI_API_KEY, {}, timeout).then(r => {
+      results.gemini = r.online ? 'online' : 'offline';
+      results.gemini_quota = { remaining: r.remaining, limit: r.limit, resetAt: r.resetAt };
+    }));
   } else { results.gemini = 'no-key'; }
 
-  // OpenRouter
+  // OpenRouter — returns X-RateLimit-* headers
   if (env.OPENROUTER_API_KEY && env.OPENROUTER_API_KEY.length > 5) {
-    checks.push(pingUrl('https://openrouter.ai/api/v1/models', { 'Authorization': 'Bearer ' + env.OPENROUTER_API_KEY }, timeout).then(ok => { results.openrouter = ok ? 'online' : 'offline'; }));
+    checks.push(probeProvider('https://openrouter.ai/api/v1/models', { 'Authorization': 'Bearer ' + env.OPENROUTER_API_KEY }, timeout).then(r => {
+      results.openrouter = r.online ? 'online' : 'offline';
+      results.openrouter_quota = { remaining: r.remaining, limit: r.limit, resetAt: r.resetAt };
+    }));
   } else { results.openrouter = 'no-key'; }
 
-  // HuggingFace
+  // HuggingFace — returns X-RateLimit-* headers
   if (env.HUGGINGFACE_API_KEY && env.HUGGINGFACE_API_KEY.length > 5) {
-    checks.push(pingUrl('https://api-inference.huggingface.co/models', { 'Authorization': 'Bearer ' + env.HUGGINGFACE_API_KEY }, timeout).then(ok => { results.huggingface = ok ? 'online' : 'offline'; }));
+    checks.push(probeProvider('https://api-inference.huggingface.co/models', { 'Authorization': 'Bearer ' + env.HUGGINGFACE_API_KEY }, timeout).then(r => {
+      results.huggingface = r.online ? 'online' : 'offline';
+      results.huggingface_quota = { remaining: r.remaining, limit: r.limit, resetAt: r.resetAt };
+      // HF returns 503 for cold models — flag it
+      if (r.status === 503) results.huggingface = 'loading';
+    }));
   } else { results.huggingface = 'no-key'; }
 
   // Mistral
   if (env.MISTRAL_API_KEY && env.MISTRAL_API_KEY.length > 5) {
-    checks.push(pingUrl('https://api.mistral.ai/v1/models', { 'Authorization': 'Bearer ' + env.MISTRAL_API_KEY }, timeout).then(ok => { results.mistral = ok ? 'online' : 'offline'; }));
+    checks.push(probeProvider('https://api.mistral.ai/v1/models', { 'Authorization': 'Bearer ' + env.MISTRAL_API_KEY }, timeout).then(r => {
+      results.mistral = r.online ? 'online' : 'offline';
+      results.mistral_quota = { remaining: r.remaining, limit: r.limit, resetAt: r.resetAt };
+    }));
   } else { results.mistral = 'no-key'; }
 
-  // Ollama (local)
+  // Ollama (local — no quota, always unlimited)
   const ollamaBase = env.OLLAMA_API_BASE || 'http://localhost:11434';
   checks.push(pingUrl(ollamaBase + '/api/version', {}, 2000).then(ok => { results.ollama = ok ? 'online' : 'offline'; }));
 
@@ -519,7 +568,7 @@ ipcMain.handle('set-speed-tier', (_, tier) => {
     );
   } catch(e) { console.error('Speed tier write error:', e); }
 });
-ipcMain.handle('get-speed-tier', () => config.speedTier || 'standard');
+ipcMain.handle('get-speed-tier', () => config.speedTier || 'economy');
 
 ipcMain.handle('get-theme', () => config.theme);
 ipcMain.handle('get-auto-hide', () => config.autoHideSeconds);

@@ -27,7 +27,7 @@ Button controls use `<button>` elements with `data-action`. Toggles are buttons 
 
 ## File Locations
 ```
-C:/Users/joshu/Documents/free-inference-stack/
+./
   token-dock/
     src/
       index.html    — ALL UI, CSS, and JS (~1700 lines)

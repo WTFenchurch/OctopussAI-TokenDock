@@ -1,0 +1,22 @@
+<svg viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- OCTOPUSS AI — App Icon -->
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="#1a1b26"/>
+  <circle cx="128" cy="128" r="116" fill="#0f1117"/>
+  <!-- Head -->
+  <ellipse cx="128" cy="95" rx="72" ry="62" fill="#3b82f6"/>
+  <!-- Eyes -->
+  <ellipse cx="100" cy="88" rx="16" ry="19" fill="#0f1117"/>
+  <ellipse cx="156" cy="88" rx="16" ry="19" fill="#0f1117"/>
+  <ellipse cx="105" cy="85" rx="7" ry="9" fill="#e4e6ed"/>
+  <ellipse cx="161" cy="85" rx="7" ry="9" fill="#e4e6ed"/>
+  <!-- Eight Arms -->
+  <path d="M60 140 Q28 185 20 230" stroke="#3b82f6" stroke-width="14" stroke-linecap="round"/>
+  <path d="M76 150 Q50 200 36 245" stroke="#3b82f6" stroke-width="12" stroke-linecap="round"/>
+  <path d="M96 158 Q82 210 70 248" stroke="#3b82f6" stroke-width="11" stroke-linecap="round"/>
+  <path d="M116 162 Q112 218 104 250" stroke="#3b82f6" stroke-width="10" stroke-linecap="round"/>
+  <path d="M140 162 Q144 218 152 250" stroke="#3b82f6" stroke-width="10" stroke-linecap="round"/>
+  <path d="M160 158 Q174 210 186 248" stroke="#3b82f6" stroke-width="11" stroke-linecap="round"/>
+  <path d="M180 150 Q206 200 220 245" stroke="#3b82f6" stroke-width="12" stroke-linecap="round"/>
+  <path d="M196 140 Q228 185 236 230" stroke="#3b82f6" stroke-width="14" stroke-linecap="round"/>
+</svg>

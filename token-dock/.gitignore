@@ -1,5 +1,10 @@
 node_modules/
 dist/
 .token_budget.json
+.paid_usage.json
+.speed_tier.json
 .env
 *.log
+*.bak
+.claude/
+icon-preview.html

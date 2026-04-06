@@ -48,7 +48,7 @@ Built for developers running multi-provider free inference stacks who want to ma
 
 ```bash
 # Clone
-git clone https://github.com/YOUR_USERNAME/token-dock.git
+git clone https://github.com/WTFenchurchIII/token-dock.git
 cd token-dock
 
 # Install

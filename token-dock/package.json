@@ -6,9 +6,11 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
+    "build-icon": "electron build-icon.js",
     "install-shortcuts": "node install.js",
     "postinstall": "node install.js",
-    "uninstall": "node uninstall.js"
+    "uninstall": "node uninstall.js",
+    "dock": "electron ."
   },
   "keywords": ["ai", "tokens", "llm", "monitoring", "electron", "openrouter", "groq", "ollama", "litellm"],
   "author": "WTFenchurchIII",
