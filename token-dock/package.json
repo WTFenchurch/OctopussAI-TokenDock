@@ -28,8 +28,10 @@
       "icon.ico",
       "icon.png",
       "icon.svg",
+      "baby-otto.png",
       "package.json"
     ],
+    "asar": true,
     "win": {
       "target": [
         {

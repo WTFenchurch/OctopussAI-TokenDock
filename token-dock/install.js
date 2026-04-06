@@ -58,19 +58,26 @@ function ensureIcon() {
 }
 
 function createWindowsShortcut(targetDir, name, iconPath) {
-  const electronPath = path.resolve(__dirname, 'node_modules', '.bin', 'electron.cmd');
+  // Use VBS launcher to hide cmd.exe window completely
+  const vbsPath = path.resolve(__dirname, 'launch.vbs');
+  const electronExe = path.resolve(__dirname, 'node_modules', 'electron', 'dist', 'electron.exe');
+  const electronCmd = path.resolve(__dirname, 'node_modules', '.bin', 'electron.cmd');
+  // VBS launcher = no console window. Fallback to exe/cmd.
+  const useVbs = fs.existsSync(vbsPath);
+  const electronPath = useVbs ? 'wscript.exe' : fs.existsSync(electronExe) ? electronExe : electronCmd;
   const appPath = path.resolve(__dirname);
   const shortcutPath = path.join(targetDir, `${name}.lnk`);
 
-  if (!fs.existsSync(electronPath)) {
-    console.error('  ❌ electron.cmd not found. Run: npm install');
+  if (!useVbs && !fs.existsSync(electronPath)) {
+    console.error('  ❌ electron not found. Run: npm install');
     return null;
   }
 
   const esc = s => s.replace(/'/g, "''");
   const iconLine = iconPath ? `$sc.IconLocation = '${esc(iconPath)}';` : '';
 
-  const ps = `$ws = New-Object -ComObject WScript.Shell; $sc = $ws.CreateShortcut('${esc(shortcutPath)}'); $sc.TargetPath = '${esc(electronPath)}'; $sc.Arguments = '"${esc(appPath)}"'; $sc.WorkingDirectory = '${esc(appPath)}'; $sc.Description = 'Token Dock - AI Token Monitor'; ${iconLine} $sc.Save();`;
+  const args = useVbs ? `"${esc(vbsPath)}"` : `"${esc(appPath)}"`;
+  const ps = `$ws = New-Object -ComObject WScript.Shell; $sc = $ws.CreateShortcut('${esc(shortcutPath)}'); $sc.TargetPath = '${esc(electronPath)}'; $sc.Arguments = '${args}'; $sc.WorkingDirectory = '${esc(appPath)}'; $sc.Description = 'Token Dock - AI Token Monitor'; $sc.WindowStyle = 7; ${iconLine} $sc.Save();`;
 
   try {
     execSync(`powershell -NoProfile -Command "${ps}"`, { stdio: 'pipe' });
