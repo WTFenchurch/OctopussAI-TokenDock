@@ -1157,7 +1157,7 @@
             </div>
           </div>
           <div class="hero-splash" id="hero-splash">
-            <div class="hero-logo" id="hero-logo"><img src="baby-otto.png" alt="Otto — Token Dock mascot"/></div>
+            <div class="hero-logo" id="hero-logo" data-action="openDonate" style="cursor:pointer"><img src="baby-otto.png" alt="Otto — Token Dock mascot"/></div>
             <div class="hero-title">Token Dock</div>
             <div class="hero-tagline">Nine Brains. One Mission.</div>
             <div class="hero-sub">Your AI token command center. Every free token tracked. Every paid dollar justified.</div>
@@ -3771,6 +3771,9 @@
               var bBtn2 = document.querySelector('[data-action="ottoBounce"]');
               if (bBtn2) bBtn2.classList.remove('active');
             }
+          },
+          'openDonate':function(){
+            if(typeof dock!=='undefined'&&dock.openExternal) dock.openExternal('https://wtfenchurch.github.io/octopuss-ai/#support');
           },
           'ottoRerender':function(){
             // Force full rebuild
