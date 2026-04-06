@@ -26,7 +26,7 @@ const svgBase64 = Buffer.from(svg).toString('base64');
 const dataUrl = `data:image/svg+xml;base64,${svgBase64}`;
 
 console.log('');
-console.log('OCTOPUSS AI — Icon Data URL Generated');
+console.log('OCTOPUS AI — Icon Data URL Generated');
 console.log('');
 console.log('SVG icon available at: icon.svg');
 console.log('');
@@ -45,7 +45,7 @@ console.log('');
 
 // Also write a simple HTML viewer for the icon
 const html = `<!DOCTYPE html>
-<html><head><title>Octopuss AI Icon Preview</title>
+<html><head><title>Octopus AI Icon Preview</title>
 <style>body{background:#0f1117;display:flex;gap:32px;align-items:center;justify-content:center;min-height:100vh;flex-wrap:wrap}
 .icon{background:#1a1b26;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .icon img{image-rendering:auto}

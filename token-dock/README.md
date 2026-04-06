@@ -166,4 +166,4 @@ SEE LICENSE
 
 ---
 
-*Built with 🐙 by WTFenchurchIII and the Octopuss AI team*
+*Built with 🐙 by WTFenchurchIII and the Octopus AI team*

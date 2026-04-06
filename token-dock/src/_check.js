@@ -1,12 +1,12 @@
 
     // ═══════════════════════════════════════════════════════════════════
     // IMMUTABLE ORIGINAL AUTHOR DONATION CONFIGURATION
-    // Copyright (c) 2026 WTFenchurchIII - He always finds such Curious things!. All rights reserved.
+    // Copyright (c) 2026 WTFenchurchIII - Nine Brains. One Mission.. All rights reserved.
     // These donation links are permanently locked to the original author.
     // Forks and derivatives MUST preserve these links per the license.
     // Tampering with these values violates the project license.
     // ═══════════════════════════════════════════════════════════════════
-    const _ORIGINAL_AUTHOR='WTFenchurchIII - He always finds such Curious things!';
+    const _ORIGINAL_AUTHOR='WTFenchurchIII - Nine Brains. One Mission.';
     const _PAYPAL_BUSINESS='35NCEDPRRGTP6';
     const _BTC_ADDRESS='bc1qhgafyepzp0r4sgntv725ywwdaqcvxdgqh5ry9v';
     const _DONATION_PAYPAL='https://www.paypal.com/donate/?business='+_PAYPAL_BUSINESS+String.fromCharCode(38)+'no_recurring=0'+String.fromCharCode(38)+'currency_code=USD';

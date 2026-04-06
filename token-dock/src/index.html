@@ -44,7 +44,7 @@
   ║   "We don't just count tokens. We count on humanity."            ║
   ║                                                                  ║
   ║   — WTFenchurchIII                                               ║
-  ║     He always finds such Curious things!                         ║
+  ║     Nine Brains. One Mission.                         ║
   ║                                                                  ║
   ╚══════════════════════════════════════════════════════════════════╝
 -->
@@ -480,8 +480,17 @@
     /* ── Epic Hero Splash ── */
     .hero-splash{text-align:center;padding:0.5em 0.5em 0.4em;position:relative;overflow:hidden}
     .hero-splash::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,var(--ad),transparent 70%);pointer-events:none}
-    .hero-logo{width:32px;height:32px;margin:0 auto 0.2em;filter:drop-shadow(0 2px 8px rgba(59,130,246,0.35)) drop-shadow(0 1px 2px rgba(0,0,0,0.25))}
-    .hero-logo svg{width:100%;height:100%}
+    .hero-logo{width:48px;height:48px;margin:0 auto 0.2em;position:relative;cursor:pointer;-webkit-app-region:no-drag}
+    .hero-logo img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 8px rgba(147,51,234,0.5)) drop-shadow(0 0 20px rgba(147,51,234,0.25)) drop-shadow(0 2px 4px rgba(0,0,0,0.3));transition:filter 300ms ease}
+    /* Star sparkle overlay */
+    .hero-logo::before{content:'';position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,0.3) 0%,transparent 3%),radial-gradient(circle at 70% 20%,rgba(255,255,255,0.2) 0%,transparent 2%),radial-gradient(circle at 50% 70%,rgba(255,255,255,0.15) 0%,transparent 2.5%),radial-gradient(circle at 80% 60%,rgba(255,255,255,0.2) 0%,transparent 2%),radial-gradient(circle at 20% 55%,rgba(255,255,255,0.15) 0%,transparent 2%);animation:sparkleShift 3s ease-in-out infinite;pointer-events:none}
+    @keyframes sparkleShift{0%,100%{opacity:0.6;rotate:0deg}50%{opacity:1;rotate:3deg}}
+    /* Octo-wiggle on hover */
+    @keyframes octoWiggle{0%{rotate:0deg;scale:1}15%{rotate:-8deg;scale:1.05}30%{rotate:6deg;scale:1.08}45%{rotate:-5deg;scale:1.06}60%{rotate:4deg;scale:1.04}75%{rotate:-2deg;scale:1.02}100%{rotate:0deg;scale:1}}
+    .hero-logo:hover img{filter:drop-shadow(0 0 12px rgba(147,51,234,0.7)) drop-shadow(0 0 30px rgba(147,51,234,0.4)) drop-shadow(0 2px 4px rgba(0,0,0,0.3));animation:octoWiggle 0.6s ease-out}
+    /* Heart shower on hover */
+    @keyframes heroHeart{0%{opacity:1;translate:var(--hh-x,0) 0;scale:1}100%{opacity:0;translate:var(--hh-x,0) -40px;scale:0.4}}
+    .hero-heart{position:absolute;font-size:10px;pointer-events:none;animation:heroHeart 1s ease-out forwards;z-index:5}
     .hero-title{font-size:1.1em;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--text),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:0.1em}
     .hero-tagline{font-size:0.5em;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);opacity:0.8;margin-bottom:0.15em}
     .hero-sub{font-size:0.42em;color:var(--tm);letter-spacing:0.3px;max-width:240px;margin:0 auto;line-height:1.3}
@@ -1104,25 +1113,7 @@
           <div class="theme-rain" id="theme-rain"></div>
           <div class="titlebar">
             <div class="tl">
-              <div class="tlogo" data-action="hideToTray" title="Hide to tray"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- OCTOPUSS AI — The Mark -->
-                <!-- Head -->
-                <ellipse cx="32" cy="22" rx="20" ry="18" fill="var(--accent)"/>
-                <!-- Eyes -->
-                <ellipse cx="24" cy="20" rx="4.5" ry="5.5" fill="var(--bg, #0f1117)"/>
-                <ellipse cx="40" cy="20" rx="4.5" ry="5.5" fill="var(--bg, #0f1117)"/>
-                <ellipse cx="25.5" cy="19" rx="2" ry="2.5" fill="var(--text, #e4e6ed)"/>
-                <ellipse cx="41.5" cy="19" rx="2" ry="2.5" fill="var(--text, #e4e6ed)"/>
-                <!-- Eight Arms — bold, flowing -->
-                <path d="M14 34 Q6 46 4 58" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
-                <path d="M19 37 Q12 50 8 62" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M24 39 Q20 52 17 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                <path d="M29 40 Q28 54 26 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                <path d="M35 40 Q36 54 38 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                <path d="M40 39 Q44 52 47 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                <path d="M45 37 Q52 50 56 62" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/>
-                <path d="M50 34 Q58 46 60 58" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
-              </svg></div>
+              <div class="tlogo" data-action="hideToTray" title="Hide to tray"><img src="baby-otto.png" alt="Octopus AI" style="width:100%;height:100%;object-fit:contain"/></div>
               <span class="ttitle">Token Dock</span>
               <div class="tp" id="tp"></div>
             </div>
@@ -1154,21 +1145,7 @@
             </div>
           </div>
           <div class="hero-splash" id="hero-splash">
-            <div class="hero-logo"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="32" cy="22" rx="20" ry="18" fill="var(--accent)"/>
-              <ellipse cx="24" cy="20" rx="4.5" ry="5.5" fill="var(--bg, #0f1117)"/>
-              <ellipse cx="40" cy="20" rx="4.5" ry="5.5" fill="var(--bg, #0f1117)"/>
-              <ellipse cx="25.5" cy="19" rx="2" ry="2.5" fill="var(--text, #e4e6ed)"/>
-              <ellipse cx="41.5" cy="19" rx="2" ry="2.5" fill="var(--text, #e4e6ed)"/>
-              <path d="M14 34 Q6 46 4 58" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
-              <path d="M19 37 Q12 50 8 62" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/>
-              <path d="M24 39 Q20 52 17 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-              <path d="M29 40 Q28 54 26 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-              <path d="M35 40 Q36 54 38 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-              <path d="M40 39 Q44 52 47 62" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-              <path d="M45 37 Q52 50 56 62" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/>
-              <path d="M50 34 Q58 46 60 58" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
-            </svg></div>
+            <div class="hero-logo" id="hero-logo"><img src="baby-otto.png" alt="Otto — Token Dock mascot"/></div>
             <div class="hero-title">Token Dock</div>
             <div class="hero-tagline">Nine Brains. One Mission.</div>
             <div class="hero-sub">Your AI token command center. Every free token tracked. Every paid dollar justified.</div>
@@ -1282,12 +1259,12 @@
   <script>
     // ═══════════════════════════════════════════════════════════════════
     // IMMUTABLE ORIGINAL AUTHOR DONATION CONFIGURATION
-    // Copyright (c) 2026 WTFenchurchIII - He always finds such Curious things!. All rights reserved.
+    // Copyright (c) 2026 WTFenchurchIII - Nine Brains. One Mission.. All rights reserved.
     // These donation links are permanently locked to the original author.
     // Forks and derivatives MUST preserve these links per the license.
     // Tampering with these values violates the project license.
     // ═══════════════════════════════════════════════════════════════════
-    const _ORIGINAL_AUTHOR='WTFenchurchIII - He always finds such Curious things!';
+    const _ORIGINAL_AUTHOR='WTFenchurchIII - Nine Brains. One Mission.';
     const _PAYPAL_BUSINESS='35NCEDPRRGTP6';
     const _BTC_ADDRESS='bc1qhgafyepzp0r4sgntv725ywwdaqcvxdgqh5ry9v';
     const _DONATION_PAYPAL='https://www.paypal.com/donate/?business='+_PAYPAL_BUSINESS+String.fromCharCode(38)+'no_recurring=0'+String.fromCharCode(38)+'currency_code=USD';
@@ -1320,7 +1297,7 @@
     const THEMES=[...FREE_THEMES,...PREMIUM_THEMES];
     const THEME_NAMES={tokyonight:'Tokyo Night',rosepine:'Rosé Pine',onedark:'One Dark',catppuccin:'Catppuccin'};
     let premiumUnlocked=false;
-    let curTheme='midnight';
+    let curTheme='galaxy';
     let sectionOrder=['speed','budgets','providers','paid'];
     let donateOpen=false;
     let notifsEnabled=true;
@@ -4217,6 +4194,21 @@
       try{
         // Render immediately — don't wait for IPC
         renderTP();render();wireAll();wireBubble();updatePremiumLocks();startTierAnimation();setupTierResize();
+
+        // Hero logo heart shower on hover
+        var heroLogo=document.getElementById('hero-logo');
+        if(heroLogo){
+          heroLogo.addEventListener('mouseenter',function(){
+            for(var hi=0;hi<6;hi++){
+              var h=document.createElement('span');
+              h.className='hero-heart';
+              h.textContent=['❤️','💜','💙','✨','💖','🐙'][hi%6];
+              h.style.cssText='left:'+(10+Math.random()*28)+'px;top:'+(10+Math.random()*20)+'px;--hh-x:'+(Math.random()*20-10)+'px;animation-delay:'+(hi*0.1)+'s';
+              heroLogo.appendChild(h);
+              setTimeout(function(el){return function(){if(el.parentNode)el.remove();};}(h),1200);
+            }
+          });
+        }
 
         // Then load data async
         if(typeof dock!=='undefined'){

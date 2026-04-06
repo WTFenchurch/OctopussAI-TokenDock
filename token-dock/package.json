@@ -16,9 +16,9 @@
     "dist:all": "electron-builder --win --ia32 --x64"
   },
   "build": {
-    "appId": "com.octopussai.tokendock",
+    "appId": "com.octopusai.tokendock",
     "productName": "Token Dock",
-    "copyright": "Copyright 2026 WTFenchurchIII / Octopuss AI",
+    "copyright": "Copyright 2026 WTFenchurchIII / Octopus AI",
     "directories": {
       "output": "dist"
     },
