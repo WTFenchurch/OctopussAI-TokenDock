@@ -347,9 +347,11 @@ function setAutoHide(seconds) {
 
 // ── Tray ──
 function getAppIcon() {
-  // Try .ico first (for Windows shortcuts), fall back to generated
+  // Try baby-otto first, then .ico, then .png
+  const babyPath = path.join(__dirname, '..', 'baby-otto.png');
   const icoPath = path.join(__dirname, '..', 'icon.ico');
   const pngPath = path.join(__dirname, '..', 'icon.png');
+  if (fs.existsSync(babyPath)) return nativeImage.createFromPath(babyPath);
   if (fs.existsSync(icoPath)) return nativeImage.createFromPath(icoPath);
   if (fs.existsSync(pngPath)) return nativeImage.createFromPath(pngPath);
   // Fallback: 16x16 octopus data URL

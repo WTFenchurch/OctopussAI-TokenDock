@@ -1,42 +1,34 @@
 /**
  * Token Dock — Icon Builder
- * Renders icon.svg in an offscreen BrowserWindow → captures as PNG → builds ICO
+ * Renders baby-otto.png at multiple sizes → builds icon.ico + icon.png
  * Run: npx electron build-icon.js
  */
-const { app, BrowserWindow, nativeImage } = require('electron');
+const { app, nativeImage } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
 app.disableHardwareAcceleration();
 
 app.whenReady().then(async () => {
-  const svgPath = path.join(__dirname, 'icon.svg');
+  const srcPath = path.join(__dirname, 'baby-otto.png');
+  if (!fs.existsSync(srcPath)) {
+    console.error('baby-otto.png not found!');
+    app.quit();
+    return;
+  }
+
+  const img = nativeImage.createFromPath(srcPath);
   const sizes = [16, 24, 32, 48, 64, 128, 256];
   const pngBuffers = {};
 
-  for (const sz of sizes) {
-    const win = new BrowserWindow({
-      width: sz, height: sz, show: false,
-      webPreferences: { offscreen: true },
-      frame: false, transparent: true
-    });
+  sizes.forEach(sz => {
+    const resized = img.resize({ width: sz, height: sz, quality: 'best' });
+    pngBuffers[sz] = resized.toPNG();
+  });
 
-    const svgContent = fs.readFileSync(svgPath, 'utf8');
-    const html = `<html><body style="margin:0;padding:0;background:transparent;overflow:hidden"><div style="width:${sz}px;height:${sz}px">${svgContent.replace(/<svg/, '<svg width="'+sz+'" height="'+sz+'"')}</div></body></html>`;
-
-    await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
-
-    // Wait for render
-    await new Promise(r => setTimeout(r, 200));
-
-    const image = await win.webContents.capturePage();
-    pngBuffers[sz] = image.toPNG();
-    win.close();
-  }
-
-  // Save 256px PNG
+  // Save 256px PNG as icon.png
   fs.writeFileSync(path.join(__dirname, 'icon.png'), pngBuffers[256]);
-  console.log('✅ icon.png (' + pngBuffers[256].length + ' bytes)');
+  console.log('✅ icon.png (' + pngBuffers[256].length + ' bytes) — from baby-otto.png');
 
   // Build ICO
   const headerSize = 6;
@@ -66,7 +58,7 @@ app.whenReady().then(async () => {
   });
 
   fs.writeFileSync(path.join(__dirname, 'icon.ico'), ico);
-  console.log('✅ icon.ico (' + ico.length + ' bytes, ' + sizes.join('/') + 'px)');
+  console.log('✅ icon.ico (' + ico.length + ' bytes, ' + sizes.join('/') + 'px) — from baby-otto.png');
 
   app.quit();
 });
