@@ -895,7 +895,7 @@
     @keyframes crabSnip{0%,70%,100%{rotate:0deg}80%{rotate:-15deg}90%{rotate:5deg}}
     @keyframes spongeWobble{0%,100%{scale:1 1;rotate:0deg}50%{scale:1.02 0.98;rotate:1deg}}
     @keyframes highFive{0%{scale:1;opacity:1}50%{scale:1.3;opacity:0.8}100%{scale:0.8;opacity:0}}
-    .env-creature{position:absolute;z-index:3;pointer-events:none;animation:swimAcross var(--swim-dur,15s) linear forwards,swimWiggle var(--wiggle-dur,2s) ease-in-out infinite}
+    .env-creature{position:absolute;z-index:6;pointer-events:none;animation:swimAcross var(--swim-dur,15s) linear forwards,swimWiggle var(--wiggle-dur,2s) ease-in-out infinite}
     .env-crab{position:absolute;bottom:14%;z-index:3;pointer-events:none;animation:crabWalk var(--crab-dur,4s) ease-in-out infinite}
     .env-crab-claw{transform-origin:bottom center;animation:crabSnip 3s ease-in-out infinite}
     .env-sponge{position:absolute;bottom:0;z-index:1;pointer-events:none;animation:spongeWobble 5s ease-in-out infinite}
@@ -2331,7 +2331,7 @@
       crab.className='env-crab';
       crab.style.cssText='left:'+(10+Math.random()*70)+'%;--crab-dur:'+(3+Math.random()*3)+'s';
       var cc=pal.coral1;
-      crab.innerHTML='<svg viewBox="0 0 28 18" width="40" height="26">'
+      crab.innerHTML='<svg viewBox="0 0 28 18" width="55" height="35">'
         +'<ellipse cx="14" cy="12" rx="10" ry="6" fill="'+cc+'"/>'
         +'<ellipse cx="14" cy="11" rx="9" ry="5" fill="'+pal.coral3+'" opacity="0.5"/>'
         +'<circle cx="10" cy="9" r="2" fill="'+pal.coral3+'"/><circle cx="10" cy="8.5" r="1" fill="rgba(255,255,255,0.6)"/>'
@@ -2345,20 +2345,20 @@
       // ═══ SEA CREATURES (swim through, occasionally high-five Otto) ═══
       var creatures=[
         // Clownfish (orange + white stripes)
-        {name:'clownfish',y:25,sz:36,dur:14,svg:'<svg viewBox="0 0 24 12" style="width:36px;height:18px"><path d="M0,6 Q4,1 12,3 L18,1 Q22,2 24,6 Q22,10 18,11 L12,9 Q4,11 0,6" fill="#f97316"/><path d="M8,3 Q8,6 8,9" stroke="white" stroke-width="2" fill="none"/><path d="M15,2 Q15,6 15,10" stroke="white" stroke-width="1.5" fill="none"/><circle cx="5" cy="5.5" r="1.2" fill="white"/><circle cx="5" cy="5.5" r="0.6" fill="#1a1a1a"/></svg>'},
+        {name:'clownfish',y:25,sz:65,dur:14,svg:'<svg viewBox="0 0 24 12" style="width:65px;height:32px"><path d="M0,6 Q4,1 12,3 L18,1 Q22,2 24,6 Q22,10 18,11 L12,9 Q4,11 0,6" fill="#f97316"/><path d="M8,3 Q8,6 8,9" stroke="white" stroke-width="2" fill="none"/><path d="M15,2 Q15,6 15,10" stroke="white" stroke-width="1.5" fill="none"/><circle cx="5" cy="5.5" r="1.2" fill="white"/><circle cx="5" cy="5.5" r="0.6" fill="#1a1a1a"/></svg>'},
         // Sea turtle
-        {name:'turtle',y:15,sz:48,dur:20,svg:'<svg viewBox="0 0 32 18" style="width:48px;height:27px"><ellipse cx="16" cy="10" rx="10" ry="7" fill="#2d6a4f"/><ellipse cx="16" cy="9" rx="9" ry="6" fill="#52b788" opacity="0.7"/><path d="M16,3 Q18,2 20,4" stroke="#2d6a4f" stroke-width="1.5" fill="none"/><circle cx="8" cy="10" r="3" fill="#40916c"/><circle cx="6" cy="10" r="2" fill="#52b788"/><circle cx="5.5" cy="9.5" r="0.6" fill="#1a1a1a"/><path d="M3,8 L0,6 M3,12 L0,14" stroke="#40916c" stroke-width="2" stroke-linecap="round"/><path d="M24,7 L28,5 M24,13 L28,15" stroke="#40916c" stroke-width="2" stroke-linecap="round"/><path d="M26,10 L32,10" stroke="#40916c" stroke-width="1.5" stroke-linecap="round"/></svg>'},
+        {name:'turtle',y:15,sz:72,dur:20,svg:'<svg viewBox="0 0 32 18" style="width:72px;height:40px"><ellipse cx="16" cy="10" rx="10" ry="7" fill="#2d6a4f"/><ellipse cx="16" cy="9" rx="9" ry="6" fill="#52b788" opacity="0.7"/><path d="M16,3 Q18,2 20,4" stroke="#2d6a4f" stroke-width="1.5" fill="none"/><circle cx="8" cy="10" r="3" fill="#40916c"/><circle cx="6" cy="10" r="2" fill="#52b788"/><circle cx="5.5" cy="9.5" r="0.6" fill="#1a1a1a"/><path d="M3,8 L0,6 M3,12 L0,14" stroke="#40916c" stroke-width="2" stroke-linecap="round"/><path d="M24,7 L28,5 M24,13 L28,15" stroke="#40916c" stroke-width="2" stroke-linecap="round"/><path d="M26,10 L32,10" stroke="#40916c" stroke-width="1.5" stroke-linecap="round"/></svg>'},
         // Eel (long wavy)
-        {name:'eel',y:55,sz:50,dur:18,svg:'<svg viewBox="0 0 40 10" style="width:50px;height:12px"><path d="M0,5 Q5,2 10,5 Q15,8 20,5 Q25,2 30,5 Q35,8 40,5" stroke="#6b5b4f" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M0,5 Q5,2 10,5 Q15,8 20,5 Q25,2 30,5 Q35,8 40,5" stroke="#8b7b6f" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="2" cy="4.5" r="0.8" fill="#1a1a1a"/></svg>'},
+        {name:'eel',y:55,sz:80,dur:18,svg:'<svg viewBox="0 0 40 10" style="width:80px;height:20px"><path d="M0,5 Q5,2 10,5 Q15,8 20,5 Q25,2 30,5 Q35,8 40,5" stroke="#6b5b4f" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M0,5 Q5,2 10,5 Q15,8 20,5 Q25,2 30,5 Q35,8 40,5" stroke="#8b7b6f" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="2" cy="4.5" r="0.8" fill="#1a1a1a"/></svg>'},
         // Jellyfish (transparent, floaty)
-        {name:'jelly',y:10,sz:32,dur:22,svg:'<svg viewBox="0 0 18 24" style="width:32px;height:42px"><ellipse cx="9" cy="6" rx="8" ry="6" fill="rgba(180,160,255,0.25)" stroke="rgba(180,160,255,0.3)" stroke-width="0.5"/><ellipse cx="9" cy="5" rx="6" ry="4" fill="rgba(200,180,255,0.15)"/><path d="M3,12 Q4,18 3,24" stroke="rgba(180,160,255,0.2)" stroke-width="0.8" fill="none"/><path d="M6,12 Q7,20 5,24" stroke="rgba(180,160,255,0.18)" stroke-width="0.8" fill="none"/><path d="M9,12 Q9,19 8,24" stroke="rgba(180,160,255,0.22)" stroke-width="0.8" fill="none"/><path d="M12,12 Q11,20 13,24" stroke="rgba(180,160,255,0.18)" stroke-width="0.8" fill="none"/><path d="M15,12 Q14,18 15,24" stroke="rgba(180,160,255,0.2)" stroke-width="0.8" fill="none"/></svg>'},
+        {name:'jelly',y:10,sz:55,dur:22,svg:'<svg viewBox="0 0 18 24" style="width:55px;height:72px"><ellipse cx="9" cy="6" rx="8" ry="6" fill="rgba(180,160,255,0.25)" stroke="rgba(180,160,255,0.3)" stroke-width="0.5"/><ellipse cx="9" cy="5" rx="6" ry="4" fill="rgba(200,180,255,0.15)"/><path d="M3,12 Q4,18 3,24" stroke="rgba(180,160,255,0.2)" stroke-width="0.8" fill="none"/><path d="M6,12 Q7,20 5,24" stroke="rgba(180,160,255,0.18)" stroke-width="0.8" fill="none"/><path d="M9,12 Q9,19 8,24" stroke="rgba(180,160,255,0.22)" stroke-width="0.8" fill="none"/><path d="M12,12 Q11,20 13,24" stroke="rgba(180,160,255,0.18)" stroke-width="0.8" fill="none"/><path d="M15,12 Q14,18 15,24" stroke="rgba(180,160,255,0.2)" stroke-width="0.8" fill="none"/></svg>'},
         // Seahorse
-        {name:'seahorse',y:35,sz:28,dur:25,svg:'<svg viewBox="0 0 14 22" style="width:28px;height:44px"><path d="M7,2 Q10,2 10,5 Q10,8 7,10 Q4,12 4,15 Q4,18 7,20 Q5,22 3,20 Q1,18 2,15 Q2,12 5,10 Q8,8 8,5 Q8,3 7,2" fill="'+pal.coral5+'" opacity="0.6"/><circle cx="8" cy="4" r="1" fill="rgba(0,0,0,0.4)"/><path d="M7,2 Q9,0 10,1" stroke="'+pal.coral5+'" stroke-width="1" fill="none" opacity="0.5"/></svg>'},
+        {name:'seahorse',y:35,sz:50,dur:25,svg:'<svg viewBox="0 0 14 22" style="width:50px;height:78px"><path d="M7,2 Q10,2 10,5 Q10,8 7,10 Q4,12 4,15 Q4,18 7,20 Q5,22 3,20 Q1,18 2,15 Q2,12 5,10 Q8,8 8,5 Q8,3 7,2" fill="'+pal.coral5+'" opacity="0.6"/><circle cx="8" cy="4" r="1" fill="rgba(0,0,0,0.4)"/><path d="M7,2 Q9,0 10,1" stroke="'+pal.coral5+'" stroke-width="1" fill="none" opacity="0.5"/></svg>'},
         // Pufferfish (round, spiky)
-        {name:'puffer',y:40,sz:32,dur:16,svg:'<svg viewBox="0 0 18 16" style="width:32px;height:28px"><circle cx="9" cy="8" r="7" fill="#f0c040" opacity="0.7"/><circle cx="9" cy="8" r="6" fill="#f8d860" opacity="0.5"/><circle cx="6" cy="7" r="1.2" fill="white"/><circle cx="6" cy="7" r="0.5" fill="#1a1a1a"/><circle cx="12" cy="7" r="1.2" fill="white"/><circle cx="12" cy="7" r="0.5" fill="#1a1a1a"/><path d="M8,10 Q9,11 10,10" stroke="#a08030" stroke-width="0.8" fill="none"/><path d="M9,1 L9,0 M3,3 L2,2 M15,3 L16,2 M2,8 L0,8 M16,8 L18,8 M3,13 L2,14 M15,13 L16,14 M9,15 L9,16" stroke="#d0a830" stroke-width="0.8" stroke-linecap="round"/></svg>'}
+        {name:'puffer',y:40,sz:60,dur:16,svg:'<svg viewBox="0 0 18 16" style="width:60px;height:52px"><circle cx="9" cy="8" r="7" fill="#f0c040" opacity="0.7"/><circle cx="9" cy="8" r="6" fill="#f8d860" opacity="0.5"/><circle cx="6" cy="7" r="1.2" fill="white"/><circle cx="6" cy="7" r="0.5" fill="#1a1a1a"/><circle cx="12" cy="7" r="1.2" fill="white"/><circle cx="12" cy="7" r="0.5" fill="#1a1a1a"/><path d="M8,10 Q9,11 10,10" stroke="#a08030" stroke-width="0.8" fill="none"/><path d="M9,1 L9,0 M3,3 L2,2 M15,3 L16,2 M2,8 L0,8 M16,8 L18,8 M3,13 L2,14 M15,13 L16,14 M9,15 L9,16" stroke="#d0a830" stroke-width="0.8" stroke-linecap="round"/></svg>'}
       ];
       // ═══ VISITOR SYSTEM — one friend swims in every ~7 sec, crosses scene, leaves ═══
-      var _visitorTimer = null;
+      if(window._visitorTimer){clearInterval(window._visitorTimer);window._visitorTimer=null;}
       function spawnVisitor(){
         var stgV = document.getElementById('tier-stage');
         var envV = stgV ? stgV.querySelector('#tier-env') : null;
@@ -2377,9 +2377,8 @@
         setTimeout(function(){ if(cel.parentNode) cel.remove(); }, (dur+1)*1000);
       }
       // Start the visitor cycle — first one after 2 sec, then every 7 sec
-      if(_visitorTimer) clearInterval(_visitorTimer);
       setTimeout(function(){ spawnVisitor(); }, 2000);
-      _visitorTimer = setInterval(spawnVisitor, 7000);
+      window._visitorTimer = setInterval(spawnVisitor, 7000);
 
       // ═══ LAYERED SEAFLOOR BACKGROUND (depth layers with transparency) ═══
       // Far background ridge (very faded)
@@ -2962,12 +2961,18 @@
           ottoEl.style.height = otto.h + 'px';
         }
 
-        // ── HARD BOUNDS — Otto NEVER leaves the stage ──
-        var margin = otto.w * 0.3;
-        if (otto.x < margin) { otto.x = margin; otto.swimVx = Math.abs(otto.swimVx || 0); }
-        if (otto.x > sw - margin) { otto.x = sw - margin; otto.swimVx = -Math.abs(otto.swimVx || 0); }
-        if (otto.y < margin) { otto.y = margin; otto.swimVy = Math.abs(otto.swimVy || 0); }
-        if (otto.y > sh - margin) { otto.y = sh - margin; otto.swimVy = -Math.abs(otto.swimVy || 0); }
+        // ── HARD BOUNDS — Otto NEVER leaves stage or gets stuck in corners ──
+        var margin = otto.w * 0.35;
+        if (otto.x < margin) { otto.x = margin; otto.swimVx = Math.abs(otto.swimVx || 0) + 0.5; }
+        if (otto.x > sw - margin) { otto.x = sw - margin; otto.swimVx = -(Math.abs(otto.swimVx || 0) + 0.5); }
+        if (otto.y < margin) { otto.y = margin; otto.swimVy = Math.abs(otto.swimVy || 0) + 0.5; }
+        if (otto.y > sh - margin) { otto.y = sh - margin; otto.swimVy = -(Math.abs(otto.swimVy || 0) + 0.5); }
+        // Corner escape — if near a corner and idle, nudge toward center
+        var inCorner = (otto.x < margin*1.5 || otto.x > sw-margin*1.5) && (otto.y < margin*1.5 || otto.y > sh-margin*1.5);
+        if (inCorner && otto.state === 'idle') {
+          otto.x += (otto.homeX - otto.x) * 0.05;
+          otto.y += (otto.homeY - otto.y) * 0.05;
+        }
 
         // ── STUCK DETECTION — force reset if any state runs too long ──
         if (otto.state === 'swimming' && otto.stateTimer > 300) {
@@ -3236,7 +3241,7 @@
 
     function stopTierAnimation(){
       if(tierAnimId){cancelAnimationFrame(tierAnimId);tierAnimId=null;}
-      if(typeof _visitorTimer!=='undefined'&&_visitorTimer){clearInterval(_visitorTimer);_visitorTimer=null;}
+      if(window._visitorTimer){clearInterval(window._visitorTimer);window._visitorTimer=null;}
     }
 
     // Keep stage reactive on resize — only resize canvas, don't rebuild

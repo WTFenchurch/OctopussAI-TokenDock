@@ -1,48 +1,85 @@
-# Token Dock
+# 🐙 Token Dock
 
-**Always-on-top desktop dock for monitoring AI token usage across free and paid tiers.**
+**Your AI token command center — a Pixar-quality desktop companion that monitors every free token, every paid dollar, and every provider in your inference stack.**
 
-Token Dock is an Electron-based side dock that sits on your screen and gives you real-time visibility into your AI inference stack — which providers are online, how many tokens you've burned, what's left in your daily budget, and what you're paying for subscriptions.
+Token Dock is an always-on-top Electron dock that sits on your screen while you work. It gives you real-time visibility into your AI usage — which providers are online, how many tokens you've burned, what's left in your daily budget, and exactly how much money you're saving by routing through free tiers first.
 
-Built for developers running multi-provider free inference stacks who want to maximize free tier usage before touching paid APIs.
+Built by developers, for developers running multi-provider free inference stacks.
+
+---
+
+## What Makes Token Dock Special
+
+### 🐙 Otto — Your AI Companion
+Otto is a Pixar/DreamWorks-quality animated octopus who lives in Token Dock. He swims through an underwater world, chases and eats token coins, makes funny faces, winks at you, blows bubbles, and gets visited by sea creature friends. The more compute you use, the more active Otto becomes.
+
+- **Real octopus anatomy** — bulbous mantle, side-mounted eyes with horizontal pupils, 8 tentacles from center beak
+- **Pixar-quality rendering** — 5-layer lighting (key, fill, rim, subsurface scattering, ambient occlusion), 3 catchlights per eye
+- **12 personality actions** — wink, tongue, raspberry, hearts, curl/unfurl, bubbles, and more
+- **Jet propulsion swimming** — body pulses, tentacles trail behind, bubble jets
+- **Sea creature visitors** — clownfish, turtle, eel, jellyfish, seahorse, pufferfish swim by every 7 seconds
+- **Underwater world** — coral reef, seaweed, sponges, crab, light rays, marine snow, layered seafloor
+- **3D spinning coins** — gold (Economy), sapphire (Standard), ember (Turbo) with real depth and shimmer
+
+### 📊 Scientific Metering
+- **Weighted savings** — real per-model pricing ($0.05-$0.69/1K) instead of flat estimates
+- **Compute-reactive tokens** — coin count scales with actual API usage, hard-capped at 12 DOM elements
+- **Tabular-nums everywhere** — numbers don't jitter when they change
+- **Timezone-aware resets** — Gemini Pacific Time auto-detected via Intl API, Groq/OpenRouter/Mistral at UTC midnight
+- **NaN-safe** — all percentage and formatting functions guard against bad data
+
+### 🎨 Themes
+- **7 free themes** — Midnight, Charcoal, Slate, Nord, Solarized, Gruvbox, Monokai
+- **7 premium themes** — Hearts, Catppuccin, Dracula, Tokyo Night, Rose Pine, Synthwave, Galaxy
+- Each theme tints the entire app including Otto's underwater world
+
+### ⚡ 3-Speed Tier System
+| Tier | Strategy | Otto |
+|------|----------|------|
+| 🌿 Economy | 100% free tokens — zero paid | Chill blue Otto, 3 coins, calm ocean |
+| ⚡ Standard | Best free 70B models | Focused blue Otto, 5 coins, data streams |
+| 🚀 Turbo | Free first, paid fallback | Intense orange Otto, 8 coins, warp speed |
 
 ---
 
 ## Features
 
-- **Always-on-top dock** — pins to the side of your screen, stays visible while you work
-- **Task-aware routing budgets** — tracks tokens across `simple`, `medium`, `complex`, and `code` tiers
-- **Provider status** — shows which free tier providers are online and configured
-- **Daily token budgets** — visual progress bars showing usage vs. self-imposed caps
-- **Paid subscription tracker** — lists all your paid AI subscriptions and monthly cost
-- **Free savings calculator** — shows how much you've saved by using free tiers
-- **Auto-refresh** — updates every 30 seconds from budget files
-- **Snap to side** — right-click tray icon to snap left or right
-- **Draggable & resizable** — position it however you like, remembers placement
-- **System tray** — click tray icon to show/hide, right-click for options
-- **Dark theme** — easy on the eyes during long sessions
+- **Always-on-top dock** — pins to the side of your screen
+- **Task-aware budgets** — tracks tokens across Simple, Medium, Complex, and Code tiers
+- **Provider health monitoring** — live status for Ollama, Groq, Gemini, OpenRouter, Mistral, HuggingFace
+- **Daily reset countdowns** — shows time until each provider's quota refreshes
+- **Paid subscription tracker** — monthly cost across Claude, ChatGPT, Copilot, Grok, Gemini Advanced
+- **Usage pace indicator** — are you on track for your daily budget or burning too fast?
+- **Sparkline graph** — 7-day token usage trend
+- **Paid token alerts** — native OS notification when paid tokens are used
+- **Notification toggle** — silence alerts when you need focus
+- **Auto-hide timer** — dock hides after 5/10/15 seconds of inactivity
+- **Minimize to bubble** — shrinks to a floating dot, click to restore
+- **Snap to edges** — right-click tray for left/right/center positioning
+- **Brass 3D settings gear** — because details matter
+- **prefers-reduced-motion** — respects accessibility preferences
+- **anime.js spring physics** — cartoon squash/stretch on every interaction
 
 ## Supported Providers
 
 ### Free Tier
-| Provider | Models | Daily Limit |
-|----------|--------|-------------|
-| Groq | Llama 3.3 70B, Llama 3.1 8B, Mixtral 8x7B | 14,400 req/day |
-| Google Gemini | Gemini 2.0 Flash, Flash Lite | 1,500 req/day |
-| OpenRouter | Llama 70B, Mistral 7B (free models) | Unlimited ($0 models) |
-| Hugging Face | Mistral 7B | Rate-limited |
-| Mistral | Mistral Small, Codestral | Experimental |
-| Ollama | Llama 3.1, CodeLlama, Mistral (local) | Unlimited |
+| Provider | Models | Daily Limit | Reset |
+|----------|--------|-------------|-------|
+| Ollama | gpt-oss:20b, CodeLlama, Mistral (local) | Unlimited | N/A |
+| Groq | Llama 3.3 70B, 3.1 8B, Mixtral 8x7B, DeepSeek R1 | 14,400 req/day | Midnight UTC |
+| Gemini Free | Flash 2.0, Flash Lite, Flash 8B | 1,500 req/day | Midnight PT |
+| OpenRouter | Qwen3-Coder, GPT-OSS 120B, Llama 3.3 70B | 1,000 req/day | Midnight UTC |
+| Mistral | Small, Codestral, Nemo 12B | ~2,000 req/day | Midnight UTC |
+| HuggingFace | Llama 3.1 70B, Qwen 2.5 72B, StarCoder2 | Rolling window | Rolling |
 
-### Paid Subscriptions (configurable)
-- Claude Max / Pro (Anthropic)
-- ChatGPT Plus / Pro (OpenAI)
-- GitHub Copilot
-- Add your own in `src/index.html`
+### Paid Subscriptions (tracked)
+- Claude Max ($100/mo) — Anthropic
+- ChatGPT Plus ($20/mo) — OpenAI
+- GitHub Copilot ($19/mo) — Microsoft
+- Grok ($30/mo) — xAI
+- Gemini Advanced ($20/mo) — Google
 
-## Screenshots
-
-*Coming soon — run it and see for yourself!*
+---
 
 ## Quick Start
 
@@ -51,20 +88,26 @@ Built for developers running multi-provider free inference stacks who want to ma
 git clone https://github.com/WTFenchurchIII/token-dock.git
 cd token-dock
 
-# Install
+# Install dependencies + create shortcuts
 npm install
 
-# Run
+# Launch
 npm start
 
 # Dev mode (with DevTools)
 npm run dev
+
+# Build icon from SVG
+npm run build-icon
+
+# Install Desktop + Start Menu + Taskbar shortcuts
+npm run install-shortcuts
 ```
 
 ## Configuration
 
 ### API Keys
-Token Dock reads from the parent directory's `.env` file. Create one with:
+Set keys in the Settings panel (gear icon) or create a `.env` file in the parent directory:
 
 ```env
 GROQ_API_KEY=gsk_...
@@ -76,11 +119,11 @@ OLLAMA_API_BASE=http://localhost:11434
 ```
 
 ### Token Budget
-The dock reads `.token_budget.json` (auto-generated by the smart router) to display real-time usage. Format:
+Token Dock reads `.token_budget.json` (generated by your smart router) to display real-time usage:
 
 ```json
 {
-  "date": "2026-04-04",
+  "date": "2026-04-05",
   "tiers": {
     "simple": { "tokens": 1200, "requests": 15 },
     "medium": { "tokens": 8500, "requests": 8 },
@@ -90,35 +133,37 @@ The dock reads `.token_budget.json` (auto-generated by the smart router) to disp
 }
 ```
 
-### Customizing Subscriptions
-Edit the `SUBSCRIPTIONS` array in `src/index.html`:
+## Tech Stack
 
-```javascript
-const SUBSCRIPTIONS = [
-  { name: 'Claude Max', plan: 'Anthropic', cost: 100, color: '#d97706', icon: 'C' },
-  { name: 'ChatGPT Plus', plan: 'OpenAI', cost: 20, color: '#10b981', icon: 'G' },
-  // Add your own...
-];
+- **Electron 33** — cross-platform desktop app
+- **Vanilla JS** — zero framework dependencies
+- **anime.js v3** — spring physics for cartoon animations (17KB, MIT)
+- **SVG + CSS @keyframes + Web Animations API** — hybrid animation architecture
+- **CSS custom properties** — fully themeable with OKLCH-ready tokens
+- **electron-store** — persists window position and preferences
+
+## Architecture
+
 ```
-
-## How It Works
-
-1. **Budget Tracking** — The smart router (`smart_router.py`) writes token usage to `.token_budget.json` after every request
-2. **Provider Detection** — Token Dock reads your `.env` to check which providers are configured
-3. **Auto-Refresh** — Every 30 seconds, the dock re-reads budget data and updates the UI
-4. **Daily Reset** — Budget files track by date, so counters reset at midnight
+Token Dock
+├── src/
+│   ├── index.html    — entire UI (CSS + HTML + JS in one file)
+│   ├── main.js       — Electron main process, IPC, provider health checks
+│   └── preload.js    — secure IPC bridge
+├── icon.svg          — vector octopus logo
+├── build-icon.js     — SVG → ICO/PNG converter
+├── install.js        — Windows shortcut installer
+└── package.json
+```
 
 ## Part of the Free Inference Stack
 
-Token Dock is designed to work with the [Free Inference Stack](../README.md) — a complete multi-provider setup that routes AI requests through free tiers first, with smart task classification and automatic fallback.
-
-## Tech Stack
-
-- **Electron** — cross-platform desktop app
-- **Vanilla JS** — zero frontend framework dependencies
-- **electron-store** — persists window position and preferences
-- **CSS custom properties** — fully themeable
+Token Dock is the monitoring dashboard for the [Free Inference Stack](https://github.com/WTFenchurchIII) — a complete multi-provider setup that routes AI requests through free tiers first, with smart task classification and automatic fallback.
 
 ## License
 
-MIT
+SEE LICENSE
+
+---
+
+*Built with 🐙 by WTFenchurchIII and the Octopuss AI team*
