@@ -1,4 +1,4 @@
-# 🐙 Token Dock
+# <img src="baby-otto.png" width="32" height="32" alt="Otto" style="vertical-align:middle"> Token Dock
 
 **Your AI token command center — a studio-quality desktop companion that monitors every free token, every paid dollar, and every provider in your inference stack.**
 
@@ -10,7 +10,7 @@ Built by developers, for developers running multi-provider free inference stacks
 
 ## What Makes Token Dock Special
 
-### 🐙 Otto — Your AI Companion
+### <img src="baby-otto.png" width="24" height="24" alt="Otto" style="vertical-align:middle"> Otto — Your AI Companion
 Otto is a studio-quality animated octopus who lives in Token Dock. He swims through an underwater world, chases and eats token coins, makes funny faces, winks at you, blows bubbles, and gets visited by sea creature friends. The more compute you use, the more active Otto becomes.
 
 - **Real octopus anatomy** — bulbous mantle, side-mounted eyes with horizontal pupils, 8 tentacles from center beak
@@ -166,4 +166,4 @@ SEE LICENSE
 
 ---
 
-*Built with 🐙 by WTFenchurchIII and the Octopus AI team*
+*Built with <img src="baby-otto.png" width="16" height="16" alt="Otto" style="vertical-align:middle"> by WTFenchurchIII and the Octopus AI team*
