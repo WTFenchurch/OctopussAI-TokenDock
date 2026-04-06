@@ -580,12 +580,15 @@
     .flex-section .cb>*{flex-shrink:0}
 
     /* Draggable section */
-    .flex-section{transition:opacity 200ms}
-    .flex-section.dragging{opacity:0.4}
-    .flex-section.drag-over{border-top:2px solid var(--accent)}
-    .drag-handle{cursor:grab;opacity:0.4;font-size:0.6em;margin-right:0.2em;-webkit-app-region:no-drag}
-    .drag-handle:hover{opacity:0.8}
-    .drag-handle:active{cursor:grabbing}
+    .flex-section{transition:transform 250ms cubic-bezier(.2,1,.3,1),opacity 200ms,box-shadow 200ms}
+    .flex-section.dragging{opacity:0.6;transform:scale(1.02);z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.4),0 0 0 1px var(--accent);border-radius:0.3em;position:relative}
+    .flex-section.drag-over-above{transform:translateY(6px);transition:transform 180ms cubic-bezier(.2,1,.3,1)}
+    .flex-section.drag-over-below{transform:translateY(-6px);transition:transform 180ms cubic-bezier(.2,1,.3,1)}
+    .flex-section.snap-in{animation:snapIn 300ms cubic-bezier(.34,1.56,.64,1)}
+    @keyframes snapIn{0%{transform:scale(0.96);opacity:0.7}50%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+    .drag-handle{cursor:grab;opacity:0.3;font-size:0.65em;margin-right:0.2em;-webkit-app-region:no-drag;transition:opacity 150ms,color 150ms}
+    .drag-handle:hover{opacity:0.8;color:var(--accent)}
+    .drag-handle:active{cursor:grabbing;opacity:1}
 
     /* Donation panel */
     .donate-panel{display:none;background:var(--surface);border:1px solid var(--border);border-radius:0.5em;padding:0.6em;flex-direction:column;gap:0.4em}
@@ -3434,7 +3437,7 @@
       };
       const s=sections[id];
       if(!s)return'';
-      return`<div class="flex-section" data-weight="${s.weight}" data-id="${id}">
+      return`<div class="flex-section" data-weight="${s.weight}" data-id="${id}" draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropSection(event)" ondragend="dragEnd(event)">
         <div class="sh" data-action="togSection"><span class="drag-handle" title="Drag to reorder">&#8942;&#8942;</span><span class="ci">&#9660;</span> ${s.label}${s.extra||''}</div>
         <div class="cb" style="max-height:2000px">${s.html}</div>
       </div>`;
@@ -3915,33 +3918,86 @@
     function tileDrop(e){e.preventDefault();const t=e.currentTarget.closest('.radial-tile');if(!t)return;const target=t.dataset.tile;if(target===tileDragName)return;const from=tileOrder.indexOf(tileDragName);const to=tileOrder.indexOf(target);tileOrder.splice(from,1);tileOrder.splice(to,0,tileDragName);render();}
     function tileEnd(e){document.querySelectorAll('.radial-tile').forEach(el=>{el.classList.remove('dragging','drag-over');});tileDragName=null;}
 
-    // Section drag & drop reorder
-    let dragId=null;
+    // ── Tactile Magnetic Drag-to-Reorder ──
+    var dragId=null;
+    var dragLastOver=null;
+
     function dragStart(e){
       dragId=e.currentTarget.dataset.id;
       e.currentTarget.classList.add('dragging');
       e.dataTransfer.effectAllowed='move';
+      // Haptic feedback via subtle scale
+      if(typeof anime!=='undefined') anime({targets:e.currentTarget,scale:[1,1.02],duration:150,easing:'easeOutQuad'});
     }
+
     function dragOver(e){
       e.preventDefault();
       e.dataTransfer.dropEffect='move';
-      const target=e.currentTarget.closest('.flex-section');
-      if(target&&target.dataset.id!==dragId)target.classList.add('drag-over');
+      var target=e.currentTarget.closest('.flex-section');
+      if(!target||target.dataset.id===dragId)return;
+
+      // Determine if dragging above or below center of target
+      var rect=target.getBoundingClientRect();
+      var midY=rect.top+rect.height/2;
+      var isAbove=e.clientY<midY;
+
+      // Clear previous hover states
+      if(dragLastOver&&dragLastOver!==target){
+        dragLastOver.classList.remove('drag-over-above','drag-over-below');
+      }
+
+      // Magnetic slide — target shifts to make room
+      target.classList.remove('drag-over-above','drag-over-below');
+      target.classList.add(isAbove?'drag-over-above':'drag-over-below');
+      dragLastOver=target;
     }
+
+    function dragLeave(e){
+      var target=e.currentTarget.closest('.flex-section');
+      if(target) target.classList.remove('drag-over-above','drag-over-below');
+    }
+
     function dropSection(e){
       e.preventDefault();
-      const target=e.currentTarget.closest('.flex-section');
+      var target=e.currentTarget.closest('.flex-section');
       if(!target)return;
-      const targetId=target.dataset.id;
+      var targetId=target.dataset.id;
       if(targetId===dragId)return;
-      const fromIdx=sectionOrder.indexOf(dragId);
-      const toIdx=sectionOrder.indexOf(targetId);
+
+      // Determine position
+      var rect=target.getBoundingClientRect();
+      var isAbove=e.clientY<rect.top+rect.height/2;
+
+      var fromIdx=sectionOrder.indexOf(dragId);
+      var toIdx=sectionOrder.indexOf(targetId);
+
+      // Insert above or below based on cursor position
       sectionOrder.splice(fromIdx,1);
-      sectionOrder.splice(toIdx,0,dragId);
+      if(fromIdx<toIdx) toIdx--;
+      sectionOrder.splice(isAbove?toIdx:toIdx+1,0,dragId);
+
+      // Save order to config
+      if(typeof dock!=='undefined'&&dock.setConfig) dock.setConfig('sectionOrder',sectionOrder);
+
       render();
+
+      // Magnetic snap animation on the dropped section
+      requestAnimationFrame(function(){
+        var dropped=document.querySelector('.flex-section[data-id="'+dragId+'"]');
+        if(dropped){
+          dropped.classList.add('snap-in');
+          setTimeout(function(){dropped.classList.remove('snap-in');},400);
+          // anime.js spring for extra juice
+          if(typeof anime!=='undefined') anime({targets:dropped,scale:[0.95,1.03,1],duration:350,easing:'spring(1,80,10,0)'});
+        }
+      });
     }
+
     function dragEnd(e){
-      document.querySelectorAll('.flex-section').forEach(el=>{el.classList.remove('dragging','drag-over');});
+      document.querySelectorAll('.flex-section').forEach(function(el){
+        el.classList.remove('dragging','drag-over-above','drag-over-below');
+      });
+      dragLastOver=null;
       dragId=null;
     }
 
