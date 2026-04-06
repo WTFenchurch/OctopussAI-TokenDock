@@ -508,9 +508,82 @@ function recordTokens(tier, tokens, requests) {
   return budget;
 }
 
+// ── Ollama Proxy: forwards requests, captures REAL token counts ──
+// Point tools at http://127.0.0.1:4444/ollama/api/generate instead of http://localhost:11434/api/generate
+// Token Dock reads the exact prompt_eval_count + eval_count from Ollama's response
+function proxyOllama(req, res) {
+  const ollamaBase = process.env.OLLAMA_API_BASE || 'http://localhost:11434';
+  const targetUrl = ollamaBase + req.url.replace('/ollama', '');
+
+  let body = '';
+  let size = 0;
+  req.on('data', chunk => {
+    size += chunk.length;
+    if (size > 1024 * 1024) { req.destroy(); return; } // 1MB max
+    body += chunk;
+  });
+  req.on('end', () => {
+    const parsed = new URL(targetUrl);
+    const options = {
+      hostname: parsed.hostname,
+      port: parsed.port || 11434,
+      path: parsed.pathname + (parsed.search || ''),
+      method: req.method,
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 120000
+    };
+
+    const proxyReq = http.request(options, (proxyRes) => {
+      let responseBody = '';
+      proxyRes.on('data', chunk => { responseBody += chunk; });
+      proxyRes.on('end', () => {
+        // Extract REAL token counts from Ollama response
+        try {
+          const data = JSON.parse(responseBody);
+          if (data.prompt_eval_count !== undefined || data.eval_count !== undefined) {
+            const promptTokens = data.prompt_eval_count || 0;
+            const completionTokens = data.eval_count || 0;
+            const totalTokens = promptTokens + completionTokens;
+            const model = data.model || 'unknown';
+
+            // Classify tier based on model
+            const tier = model.includes('code') || model.includes('Code') ? 'code' : 'simple';
+
+            // Log REAL measured tokens
+            recordTokens(tier, totalTokens, 1);
+            console.log('[OLLAMA PROXY] REAL: ' + promptTokens + ' in + ' + completionTokens + ' out = ' + totalTokens + ' tokens (' + model + ' → ' + tier + ')');
+          }
+        } catch (e) {
+          // Streaming or non-JSON response — skip counting
+        }
+
+        // Forward response to caller unchanged
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        res.end(responseBody);
+      });
+    });
+
+    proxyReq.on('error', (e) => {
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Ollama proxy error: ' + e.message }));
+    });
+
+    proxyReq.on('timeout', () => {
+      proxyReq.destroy();
+      res.writeHead(504, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Ollama proxy timeout' }));
+    });
+
+    if (body) proxyReq.write(body);
+    proxyReq.end();
+  });
+}
+
 // ── Token Router: Local HTTP listener on port 4444 ──
-// Accepts POST /log with {tier, tokens, requests, provider, model}
-// Claude Code hooks + external tools can POST here to log usage
+// POST /log — manual token logging
+// GET /budget — current budget
+// GET /health — status
+// /ollama/* — proxy to Ollama with real token counting
 let tokenServer = null;
 function startTokenRouter() {
   try {
@@ -553,6 +626,9 @@ function startTokenRouter() {
       } else if (req.method === 'GET' && req.url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok', version: '1.7.0' }));
+      } else if (req.url.startsWith('/ollama/')) {
+        // Proxy to Ollama — captures REAL token counts
+        proxyOllama(req, res);
       } else {
         res.writeHead(404);
         res.end('Not found');
