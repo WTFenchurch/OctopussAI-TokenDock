@@ -440,11 +440,147 @@ function setTheme(theme) {
   mainWindow.webContents.send('set-theme', theme);
 }
 
-// ── IPC ──
+// ── IPC + TOKEN ROUTER ──
 const budgetPath = path.join(__dirname, '..', '..', '.token_budget.json');
 const envPath = path.join(__dirname, '..', '..', '.env');
-
 const paidUsagePath = path.join(__dirname, '..', '..', '.paid_usage.json');
+const http = require('http');
+
+// ── Budget Helper: read, auto-reset if stale, write ──
+const VALID_TIERS = ['simple', 'medium', 'complex', 'code'];
+const MAX_BODY_SIZE = 4096; // 4KB max POST body — prevent abuse
+
+function freshBudget(date) {
+  return { date: date, tiers: {
+    simple: { tokens: 0, requests: 0 },
+    medium: { tokens: 0, requests: 0 },
+    complex: { tokens: 0, requests: 0 },
+    code: { tokens: 0, requests: 0 }
+  }};
+}
+
+function readBudget() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const data = JSON.parse(fs.readFileSync(budgetPath, 'utf-8'));
+    if (data.date !== today) {
+      const budget = freshBudget(today);
+      fs.writeFileSync(budgetPath, JSON.stringify(budget, null, 2));
+      return budget;
+    }
+    return data;
+  } catch {
+    const budget = freshBudget(today);
+    fs.writeFileSync(budgetPath, JSON.stringify(budget, null, 2));
+    return budget;
+  }
+}
+
+function recordTokens(tier, tokens, requests) {
+  // Validate tier
+  if (!VALID_TIERS.includes(tier)) tier = 'medium';
+  // Validate numbers
+  tokens = Math.max(0, Math.floor(Number(tokens) || 0));
+  requests = Math.max(0, Math.floor(Number(requests) || 1));
+
+  const budget = readBudget();
+  if (!budget.tiers[tier]) budget.tiers[tier] = { tokens: 0, requests: 0 };
+  budget.tiers[tier].tokens += tokens;
+  budget.tiers[tier].requests += requests;
+  fs.writeFileSync(budgetPath, JSON.stringify(budget, null, 2));
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('budget-updated');
+  }
+  return budget;
+}
+
+// ── Token Router: Local HTTP listener on port 4444 ──
+// Accepts POST /log with {tier, tokens, requests, provider, model}
+// Claude Code hooks + external tools can POST here to log usage
+let tokenServer = null;
+function startTokenRouter() {
+  try {
+    tokenServer = http.createServer((req, res) => {
+      // CORS headers for local tools
+      res.setHeader('Access-Control-Allow-Origin', 'http://localhost');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
+
+      if (req.method === 'POST' && req.url === '/log') {
+        let body = '';
+        let size = 0;
+        req.on('data', chunk => {
+          size += chunk.length;
+          if (size > MAX_BODY_SIZE) { req.destroy(); return; }
+          body += chunk;
+        });
+        req.on('end', () => {
+          try {
+            const data = JSON.parse(body);
+            const tier = data.tier || 'medium';
+            const tokens = data.tokens || data.total_tokens || 0;
+            const requests = data.requests || 1;
+            const result = recordTokens(tier, tokens, requests);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, budget: result }));
+            console.log(`[TOKEN ROUTER] +${tokens} tokens (${tier}) from ${data.provider || 'unknown'}/${data.model || 'unknown'}`);
+          } catch (e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+          }
+        });
+      } else if (req.method === 'GET' && req.url === '/budget') {
+        // Read current budget
+        const budget = readBudget();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(budget));
+      } else if (req.method === 'GET' && req.url === '/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok', version: '1.7.0' }));
+      } else {
+        res.writeHead(404);
+        res.end('Not found');
+      }
+    });
+
+    // SECURITY: bind to 127.0.0.1 ONLY — no external access
+    tokenServer.listen(4444, '127.0.0.1', () => {
+      console.log('[TOKEN ROUTER] Listening on http://127.0.0.1:4444');
+      console.log('[TOKEN ROUTER] POST /log {tier, tokens, provider, model}');
+      console.log('[TOKEN ROUTER] GET /budget — current usage');
+      console.log('[TOKEN ROUTER] GET /health — status check');
+    });
+
+    tokenServer.on('error', (e) => {
+      if (e.code === 'EADDRINUSE') {
+        console.log('[TOKEN ROUTER] Port 4444 in use — router already running');
+      } else {
+        console.error('[TOKEN ROUTER] Error:', e.message);
+      }
+    });
+  } catch (e) {
+    console.error('[TOKEN ROUTER] Failed to start:', e.message);
+  }
+}
+
+// ── File Watcher: watch .token_budget.json for external changes ──
+let budgetWatcher = null;
+function watchBudgetFile() {
+  try {
+    // Ensure file exists
+    readBudget();
+    budgetWatcher = fs.watch(budgetPath, { persistent: false }, (eventType) => {
+      if (eventType === 'change' && mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('budget-updated');
+      }
+    });
+  } catch (e) {
+    console.warn('[FILE WATCHER] Could not watch budget file:', e.message);
+  }
+}
 
 ipcMain.handle('get-paid-usage', () => {
   try { return JSON.parse(fs.readFileSync(paidUsagePath, 'utf-8')); }
@@ -452,8 +588,12 @@ ipcMain.handle('get-paid-usage', () => {
 });
 
 ipcMain.handle('get-budget', () => {
-  try { return JSON.parse(fs.readFileSync(budgetPath, 'utf-8')); }
-  catch { return null; }
+  return readBudget();
+});
+
+// IPC: manual token recording from renderer
+ipcMain.handle('record-tokens', (_, tier, tokens, requests) => {
+  return recordTokens(tier, tokens || 0, requests || 1);
 });
 ipcMain.handle('get-env', () => {
   try {
@@ -471,7 +611,6 @@ ipcMain.handle('get-env', () => {
 });
 // ── Live Provider Health Checks ──
 const https = require('https');
-const http = require('http');
 
 function pingUrl(url, headers, timeoutMs) {
   return new Promise((resolve) => {
@@ -717,5 +856,5 @@ process.on('uncaughtException', (err) => {
 });
 
 // ── Lifecycle ──
-app.whenReady().then(() => { createWindow(); createTray(); });
+app.whenReady().then(() => { createWindow(); createTray(); startTokenRouter(); watchBudgetFile(); });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

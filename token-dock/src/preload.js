@@ -32,4 +32,6 @@ contextBridge.exposeInMainWorld('dock', {
   isFirstRun: () => ipcRenderer.invoke('is-first-run'),
   onAutoHideWarning: (cb) => ipcRenderer.on('auto-hide-warning', cb),
   resetAutoHideTimer: () => ipcRenderer.invoke('reset-auto-hide-timer'),
+  recordTokens: (tier, tokens, requests) => ipcRenderer.invoke('record-tokens', tier, tokens, requests),
+  onBudgetUpdated: (cb) => ipcRenderer.on('budget-updated', cb),
 });

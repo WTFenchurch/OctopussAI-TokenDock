@@ -4289,6 +4289,13 @@
         // Render immediately — don't wait for IPC
         renderTP();render();wireAll();wireBubble();updatePremiumLocks();startTierAnimation();setupTierResize();
 
+        // Live budget updates from token router + file watcher
+        if(typeof dock!=='undefined'&&dock.onBudgetUpdated){
+          dock.onBudgetUpdated(async function(){
+            try{await loadBudget();render();}catch(e){console.warn('budget-updated:',e);}
+          });
+        }
+
         // Hero logo heart shower on hover
         var heroLogo=document.getElementById('hero-logo');
         if(heroLogo){
