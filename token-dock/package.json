@@ -78,7 +78,7 @@
   "author": "WTFenchurchIII",
   "license": "SEE LICENSE",
   "devDependencies": {
-    "electron": "^33.0.0",
+    "electron": "^39.8.5",
     "electron-builder": "^26.8.1"
   },
   "dependencies": {
